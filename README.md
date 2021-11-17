@@ -1,5 +1,4 @@
 # Network-Management-System
-# Network-Management-System
 Design a Network management system for Routers that is running SONiC operating system, this system should provide following functions,
 
 1.  Inventory management
