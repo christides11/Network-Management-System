@@ -14,7 +14,7 @@ db.create_all()
 
 @app.route('/')
 def hello(): 
-    return "Hey!";
+    return "Hey!"
 
 @app.route('/user', methods=['POST'])
 def create_user():
