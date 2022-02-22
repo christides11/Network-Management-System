@@ -4,13 +4,19 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import './index.css';
 import LoginPage from '../main/login/login';
 import DiscoveryPage from '../main/discovery/discovery';
+import DevicesPage from '../main/devices/devices';
+import DevicePage from '../main/device/device';
+import SummaryPage from '../main/summary/summary';
 
 const rootElement = document.getElementById("root");
 render(
   <BrowserRouter>
     <Routes>
       <Route path="/" element={<LoginPage />} />
+      <Route path="/summary" element={<SummaryPage />} />
+      <Route path="/devices" element={<DevicesPage />} />
       <Route path="/discovery" element={<DiscoveryPage />} />
+      <Route path="/device" element={<DevicePage />} />
       <Route
         path="*"
         element={
