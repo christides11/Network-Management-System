@@ -46,11 +46,11 @@ def disconnect(sid):
 
 def main(shouldHostProbe, serverIP, serverPort):
     global hostProbe
-    if shouldHostProbe == True:
-        hostProbe = subprocess.Popen(['python', '../Probe/ProbeMain.py'])
-        probes.append({ "nickname": "Local Probe", "ip": "localhost", "mac": "dummy" })
     conn = psycopg2.connect(dbname=dbLogin["DB_NAME"], user=dbLogin["DB_USER"], password=dbLogin["DB_PASS"], host=dbLogin["DB_HOST"])
     conn.close()
+    if shouldHostProbe == True:
+        hostProbe = subprocess.Popen(['python', '../Probe/ProbeMain.py', "http://{}:{}".format(serverIP, serverPort)])
+        probes.append({ "nickname": "Local Probe", "ip": "localhost", "mac": "dummy" })
     web.run_app(app, host=serverIP, port=serverPort)
 
 # core_server.py HOST_PROBE:boolean SERVER_IP:string SERVER_PORT:string

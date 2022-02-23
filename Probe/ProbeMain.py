@@ -1,26 +1,11 @@
 from aiohttp import web
+import asyncio
 import socketio
 import sys
 import socket
 
-sio = socketio.AsyncServer(cors_allowed_origins='*')
-app = web.Application()
-sio.attach(app)
+sio = socketio.AsyncClient()
 
-#testing scannning using nmap code from here: https://www.geeksforgeeks.org/port-scanner-using-python-nmap/  
-# assign the target ip to be scanned to
-# a variable
-#target = '127.0.0.1'
-   
-# instantiate a PortScanner object
-#scanner = nmap.PortScanner()
-
-#Scan single port
-#result = scanner.scan(target, str(76))
-
-#result = result['scan'][target]['tcp'][76]['state']
-
-#print(f'port 76 is {result}.')
 def Scan(target, port):
     #create new socket
     socketObject = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -30,26 +15,29 @@ def Scan(target, port):
     print(result)
     print(" This is the end of the result")
     socketObject.close()
-@sio.event
-def connect(sid, environ):
-    print("connect ", sid)
 
 @sio.event
-async def DiscoverDevices(sid, probeIP):
-    print("Discovering devices...")
+def connect():
+    print("connection established")
 
 @sio.event
-def disconnect(sid):
-    print('disconnect ', sid)
+async def DiscoverDevicesICMP(listIsIPRanges, searchList):
+    print("Discovering devices using ICMP (ping) scan.")
 
-def probeMain(probeIP, probePort):
-    web.run_app(app, host=probeIP, port=probePort)
+@sio.event
+async def DiscoverDevicesTCP(listIsIPRanges, searchList):
+    print("Discovering devices using TCP port scan.")
+
+@sio.event
+def disconnect():
+    print('disconnected from server.')
+
+async def probeMain(serverIP):
+    await sio.connect(serverIP)
+    await sio.wait()
 
 if __name__ == '__main__':
-    probeIP = 'localhost'
-    probePort = 8181
+    serverIP = 'http://localhost:5000'
     if len(sys.argv) > 1:
-        probeIP = str(sys.argv[1])
-    if len(sys.argv) > 2:
-        probePort = int(sys.argv[2])
-    probeMain(probeIP, probePort)
+        serverIP = str(sys.argv[1])
+    asyncio.run(probeMain(serverIP))
