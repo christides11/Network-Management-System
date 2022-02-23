@@ -8,6 +8,9 @@ from threading import Thread
 import sys
 import psycopg2
 import json
+import sys
+sys.path.append('../Probe/')
+from ProbeMain import probeMain
 
 sio = socketio.AsyncServer(cors_allowed_origins='*')
 app = web.Application()
@@ -39,13 +42,23 @@ async def TryRemoveProbeByName(sid, probeName):
 def disconnect(sid):
     print('disconnect ', sid)
 
-if __name__ == '__main__':
-    serverIP = 'localhost'
-    serverPort = 8080
-    if len(sys.argv) > 1:
-        serverIP = str(sys.argv[1])
-    if len(sys.argv) > 2:
-        serverPort = int(sys.argv[2])
+def main(shouldHostProbe, serverIP, serverPort):
+    if shouldHostProbe == True:
+        probeMain('localhost', 8181)
     conn = psycopg2.connect(dbname=dbLogin["DB_NAME"], user=dbLogin["DB_USER"], password=dbLogin["DB_PASS"], host=dbLogin["DB_HOST"])
     conn.close()
     web.run_app(app, host=serverIP, port=serverPort)
+
+# core_server.py HOST_PROBE:boolean SERVER_IP:string SERVER_PORT:string
+if __name__ == '__main__':
+    shouldHostProbe = False
+    serverIP = 'localhost'
+    serverPort = 8080
+    if len(sys.argv) > 1:
+        if sys.argv[1].lower() == 'true':
+            shouldHostProbe = True
+    if len(sys.argv) > 2:
+        serverIP = str(sys.argv[2])
+    if len(sys.argv) > 3:
+        serverPort = int(sys.argv[3])
+    main(shouldHostProbe, serverIP, serverPort)
