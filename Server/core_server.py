@@ -1,3 +1,4 @@
+from asyncio.windows_events import NULL
 from glob import glob
 from aiohttp import web
 import socket
@@ -10,8 +11,10 @@ import psycopg2
 import json
 import sys
 sys.path.append('../Probe/')
-from ProbeMain import probeMain
+#from ProbeMain import probeMain
+import subprocess
 
+hostProbe = NULL
 sio = socketio.AsyncServer(cors_allowed_origins='*')
 app = web.Application()
 sio.attach(app)
@@ -43,8 +46,9 @@ def disconnect(sid):
     print('disconnect ', sid)
 
 def main(shouldHostProbe, serverIP, serverPort):
+    global hostProbe
     if shouldHostProbe == True:
-        probeMain('localhost', 8181)
+        hostProbe = subprocess.Popen(['python', '../Probe/ProbeMain.py'])
     conn = psycopg2.connect(dbname=dbLogin["DB_NAME"], user=dbLogin["DB_USER"], password=dbLogin["DB_PASS"], host=dbLogin["DB_HOST"])
     conn.close()
     web.run_app(app, host=serverIP, port=serverPort)
