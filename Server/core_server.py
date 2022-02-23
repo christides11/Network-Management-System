@@ -11,7 +11,6 @@ import psycopg2
 import json
 import sys
 sys.path.append('../Probe/')
-#from ProbeMain import probeMain
 import subprocess
 
 hostProbe = NULL
@@ -49,6 +48,7 @@ def main(shouldHostProbe, serverIP, serverPort):
     global hostProbe
     if shouldHostProbe == True:
         hostProbe = subprocess.Popen(['python', '../Probe/ProbeMain.py'])
+        probes.append({ "nickname": "Local Probe", "ip": "localhost", "mac": "dummy" })
     conn = psycopg2.connect(dbname=dbLogin["DB_NAME"], user=dbLogin["DB_USER"], password=dbLogin["DB_PASS"], host=dbLogin["DB_HOST"])
     conn.close()
     web.run_app(app, host=serverIP, port=serverPort)
