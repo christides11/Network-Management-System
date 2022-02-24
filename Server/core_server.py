@@ -24,8 +24,18 @@ f.close()
 probes = []
 
 @sio.event
-def connect(sid, environ):
+async def connect(sid, environ):
     print("connect ", sid)
+
+@sio.event
+def ReceiveScanResults(sid, data):
+    print('SERVER:')
+    for x in range(len(data["resultList"])):
+        print(data["resultList"][x])
+
+@sio.event
+async def testCall(sid):
+    await sio.emit('DiscoverDevicesICMP', {'listIsIPRanges': True, 'searchList': ['10.4.1.10', '10.4.1.100'] })
 
 @sio.event
 async def TryRegisterProbe(sid, probeName, probeIP):

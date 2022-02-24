@@ -76,22 +76,27 @@ def pingScanner(startAddr, endAddr, tcpScan):
     for p in pool:
         p.join()
 
+    finalResults = []
     while not results.empty():
         ip = results.get()
-        print(ip)
+        finalResults.append(str(ip))
+        #print(ip)
     t2 = datetime.now()
     total = t2 - t1
     print ("Scan completed in: ",total)
+    return finalResults
 
 @sio.event
-def connect():
+async def connect():
     print("connection established")
+    await sio.emit('testCall')
 
 @sio.event
-def DiscoverDevicesICMP(listIsIPRanges, searchList):
+async def DiscoverDevicesICMP(data):
+    print('PROBE:')
     print("Discovering devices using ICMP (ping) scan.")
-    pingScanner(searchList[0], searchList[1], False)
-
+    result = pingScanner(data["searchList"][0], data["searchList"][1], False)
+    await sio.emit('ReceiveScanResults', {"resultList": result} )
 
 @sio.event
 def DiscoverDevicesTCP(listIsIPRanges, searchList):
@@ -99,7 +104,7 @@ def DiscoverDevicesTCP(listIsIPRanges, searchList):
     pingScanner(searchList[0], searchList[1], True)
 
 @sio.event
-def disconnect():
+async def disconnect():
     print('disconnected from server.')
 
 async def probeMain(serverIP):
@@ -110,6 +115,6 @@ if __name__ == '__main__':
     serverIP = 'http://localhost:5000'
     if len(sys.argv) > 1:
         serverIP = str(sys.argv[1])
-    DiscoverDevicesICMP(0, ["10.4.1.10", "10.4.1.100"])
+    #DiscoverDevicesICMP(0, ["10.4.1.10", "10.4.1.100"])
     #DiscoverDevicesTCP(0, ["10.4.3.150", "10.4.3.250"])
-    #asyncio.run(probeMain(serverIP))
+    asyncio.run(probeMain(serverIP))
