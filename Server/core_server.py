@@ -41,6 +41,10 @@ async def TryRemoveProbeByName(sid, probeName):
     print("Trying to remove probe {}.".format(probeName))
 
 @sio.event
+async def Client_DiscoveryScan(sid):
+    
+
+@sio.event
 def disconnect(sid):
     print('disconnect ', sid)
 
@@ -53,7 +57,8 @@ def main(shouldHostProbe, serverIP, serverPort):
         probes.append({ "nickname": "Local Probe", "ip": "localhost", "mac": "dummy" })
     web.run_app(app, host=serverIP, port=serverPort)
 
-# core_server.py HOST_PROBE:boolean SERVER_IP:string SERVER_PORT:string
+# example of arguments
+# core_server.py HOST_PROBE?:boolean SERVER_IP?:string SERVER_PORT?:string
 if __name__ == '__main__':
     shouldHostProbe = False
     serverIP = 'localhost'
