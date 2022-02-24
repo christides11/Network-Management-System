@@ -13,6 +13,10 @@ export default function App(){
     const [socket, setSocket] = useState(null);
 
     useEffect(() => {
+        console.log("a");
+        if(socket != null){
+            console.log(window.location.pathname);
+        }
         return () => { }
     }, []);
 
@@ -20,7 +24,7 @@ export default function App(){
         <BrowserRouter>
             <Routes>
                 <Route path="/" element={<LoginPage socket={socket} setSocket={setSocket} />} />
-                <Route path="/summary" element={<SummaryPage />} />
+                <Route path="/summary" element={<SummaryPage socket={socket} setSocket={setSocket} />} />
                 <Route path="/devices" element={<DevicesPage />} />
                 <Route path="/discovery" element={<DiscoveryPage />} />
                 <Route path="/device" element={<DevicePage />} />
