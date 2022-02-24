@@ -42,7 +42,7 @@ async def TryRemoveProbeByName(sid, probeName):
 
 @sio.event
 async def Client_DiscoveryScan(sid):
-    
+    print("ccc.")    
 
 @sio.event
 def disconnect(sid):
