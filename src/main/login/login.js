@@ -11,7 +11,7 @@ function LoginPage({socket, setSocket}){
     function TryLogin(){
         setSocket(socketio.connect("http://" + serverIP + ":8080"));
         setServerIP(serverIP);
-        //navigate("/summary");
+        navigate("/summary");
     }
 
     useEffect(() => {
@@ -20,17 +20,15 @@ function LoginPage({socket, setSocket}){
             console.log(window.location.pathname);
         }
         return () => { }
-    }, []);
+    }, [socket]);
 
     return (
         <div className="LoginPage">
-            {socket == null &&
-                <nav>
-                    <h1>Login Page</h1>
-                    <input value={serverIP} onInput={e => setServerIP(e.target.value)} />
-                    <button onClick={TryLogin}>Login</button>
-                </nav>
-            }
+            <nav>
+                <h1>Login Page</h1>
+                <input value={serverIP} onInput={e => setServerIP(e.target.value)} />
+                <button onClick={TryLogin}>Login</button>
+            </nav>
         </div>
     );
 }
