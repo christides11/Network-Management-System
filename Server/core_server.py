@@ -32,6 +32,7 @@ async def connect(sid, environ):
 async def RegisterDiscoveryScan(sid, scanName, probeIndex, discoveryOptions):
     print("Registering scan", scanName, "for probe", probes[probeIndex]["nickname"])
     print("Starting scan", scanName, "on probe", probes[probeIndex]["nickname"])
+    await sio.emit('StartScan', {})
 
 @sio.event
 def ReceiveScanResults(sid, data):
