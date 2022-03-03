@@ -1,6 +1,5 @@
 import './login.css';
 import React, { useState, useEffect } from 'react';
-import InputForm from '../../components/NameForm';
 import socketio from "socket.io-client";
 import { useNavigate } from 'react-router-dom';
 

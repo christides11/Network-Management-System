@@ -28,4 +28,10 @@ export const SidebarData = [
         icon: <FiIcons.FiAlertTriangle />,
         cName: 'navText'
     },
+    {
+        title: 'Discovery',
+        path: '/discovery',
+        icon: <FiIcons.FiAlertTriangle />,
+        cName: 'navText'
+    },
 ]

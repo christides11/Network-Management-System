@@ -89,7 +89,7 @@ def pingScanner(startAddr, endAddr, tcpScan):
 @sio.event
 async def connect():
     print("connection established")
-    await sio.emit('testCall')
+    #await sio.emit('testCall')
 
 @sio.event
 async def DiscoverDevicesICMP(data):

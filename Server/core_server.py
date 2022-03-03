@@ -22,10 +22,16 @@ f = open('env.json')
 dbLogin = json.load(f)
 f.close()
 probes = []
+dbConn = NULL
 
 @sio.event
 async def connect(sid, environ):
     print("connect ", sid)
+
+@sio.event
+async def RegisterDiscoveryScan(sid, scanName, probeIndex, discoveryOptions):
+    print("Registering scan", scanName, "for probe", probes[probeIndex]["nickname"])
+    print("Starting scan", scanName, "on probe", probes[probeIndex]["nickname"])
 
 @sio.event
 def ReceiveScanResults(sid, data):
@@ -60,12 +66,16 @@ def disconnect(sid):
 
 def main(shouldHostProbe, serverIP, serverPort):
     global hostProbe
-    conn = psycopg2.connect(dbname=dbLogin["DB_NAME"], user=dbLogin["DB_USER"], password=dbLogin["DB_PASS"], host=dbLogin["DB_HOST"])
-    conn.close()
+    dbConn = psycopg2.connect(dbname=dbLogin["DB_NAME"], user=dbLogin["DB_USER"], password=dbLogin["DB_PASS"], host=dbLogin["DB_HOST"])
+    cursor = dbConn.cursor()
+    cursor.execute("select version()")
+    data = cursor.fetchone()
+    print("DB Connection established to: ", data)
     if shouldHostProbe == True:
         hostProbe = subprocess.Popen(['python', '../Probe/ProbeMain.py', "http://{}:{}".format(serverIP, serverPort)])
         probes.append({ "nickname": "Local Probe", "ip": "localhost", "mac": "dummy" })
     web.run_app(app, host=serverIP, port=serverPort)
+    dbConn.close()
 
 # example of arguments
 # core_server.py HOST_PROBE?:boolean SERVER_IP?:string SERVER_PORT?:string

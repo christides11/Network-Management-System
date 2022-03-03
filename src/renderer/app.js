@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { io } from 'socket.io-client';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import LoginPage from '../main/login/login';
-import DiscoveryPage from '../main/discovery/discovery';
+import DiscoveryPage from '../main/discovery/discoveryTemp';
 import DevicesPage from '../main/devices/devices';
 import DevicePage from '../main/device/device';
 import SummaryPage from '../main/summary/summary';
@@ -34,7 +34,7 @@ export default function App(){
                 <Route path="/summary" element={<SummaryPage socket={socket} setSocket={setSocket} />} />
                 <Route path="/device" element={<DevicePage />} />
                 <Route path="/devices" element={<DevicesPage />} />
-                <Route path="/discovery" element={<DiscoveryPage />} />
+                <Route path="/discovery" element={<DiscoveryPage socket={socket} />} />
                 <Route path='/alerts' element={<Alerts/>} />
                 <Route path='/eventlog' element={<EventLog />} />
                 <Route
