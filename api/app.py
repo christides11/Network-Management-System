@@ -1,4 +1,5 @@
 from flask import Flask
+from flask_cors import CORS
 
 from user.routes import user
 from network.routes import network
@@ -7,6 +8,7 @@ from devices.routes import devices
 from sensors.routes import sensors
 
 app = Flask(__name__)
+CORS(app)
 app.register_blueprint(user)
 app.register_blueprint(network)
 app.register_blueprint(probes)
