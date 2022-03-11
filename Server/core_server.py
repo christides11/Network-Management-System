@@ -33,7 +33,7 @@ scanResults = []
 async def connect(sid, environ):
     print("connect ", sid)
 
-# Links up the probe to the probe it's suppose to represent.
+# Connects the probe SID to the probe it's suppose to represent.
 @sio.event
 async def LinkProbe(sid, probeID):
     if probeID not in probes:
@@ -42,20 +42,17 @@ async def LinkProbe(sid, probeID):
     probes[probeID]['sid'] = sid
     print("SERVER: Linked sid {} to probe {}".format(sid, probeID))
 
-# Register a discovery scan the list of scans.
-#@sio.event
-#async def RegisterDiscoveryScan(sid, scanName, probeID, discoveryOptions):
-#    if probeID not in probes:
-#        print("Invalid probe {} asking for scan".format(probeID))
-#        return
-#    print("Registering scan", scanName, "for probe", probes[probeID]["nickname"])
-#    await sio.emit('StartScan', {})
-
+# Register a discovery scan to the list of scans.
 @sio.event
-def ReceiveScanResults(sid, data):
-    print('SERVER:')
-    for x in range(len(data["resultList"])):
-        print(data["resultList"][x])
+async def RegisterDiscoveryScan(sid, data):
+    print("Registering scan {} for probe {}.".format(data['scanName'], data['probeID']))
+    registeredScans.append(data)
+
+#@sio.event
+#def ReceiveScanResults(sid, data):
+#    print('SERVER:')
+#    for x in range(len(data["resultList"])):
+#        print(data["resultList"][x])
 
 #@sio.event
 #async def TryRegisterProbe(sid, probeName, probeIP):
