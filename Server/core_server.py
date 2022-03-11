@@ -21,18 +21,35 @@ sio.attach(app)
 f = open('env.json')
 dbLogin = json.load(f)
 f.close()
-probes = []
+probes = {}
 dbConn = NULL
+
+# TEMPORARY DATA.
+# These shouild be in the database idealy
+registeredScans = []
+scanResults = []
 
 @sio.event
 async def connect(sid, environ):
     print("connect ", sid)
 
+# Links up the probe to the probe it's suppose to represent.
 @sio.event
-async def RegisterDiscoveryScan(sid, scanName, probeIndex, discoveryOptions):
-    print("Registering scan", scanName, "for probe", probes[probeIndex]["nickname"])
-    print("Starting scan", scanName, "on probe", probes[probeIndex]["nickname"])
-    await sio.emit('StartScan', {})
+async def LinkProbe(sid, probeID):
+    if probeID not in probes:
+        print("Invalid probe {} trying to link.".format(probeID))
+        return
+    probes[probeID]['sid'] = sid
+    print("SERVER: Linked sid {} to probe {}".format(sid, probeID))
+
+# Register a discovery scan the list of scans.
+#@sio.event
+#async def RegisterDiscoveryScan(sid, scanName, probeID, discoveryOptions):
+#    if probeID not in probes:
+#        print("Invalid probe {} asking for scan".format(probeID))
+#        return
+#    print("Registering scan", scanName, "for probe", probes[probeID]["nickname"])
+#    await sio.emit('StartScan', {})
 
 @sio.event
 def ReceiveScanResults(sid, data):
@@ -40,29 +57,28 @@ def ReceiveScanResults(sid, data):
     for x in range(len(data["resultList"])):
         print(data["resultList"][x])
 
-@sio.event
-async def testCall(sid):
-    await sio.emit('DiscoverDevicesICMP', {'listIsIPRanges': True, 'searchList': ['10.4.1.10', '10.4.1.100'] })
+#@sio.event
+#async def TryRegisterProbe(sid, probeName, probeIP):
+#    print("Trying to register probe {}.".format(probeIP))
+#    probes.append({nickname: probeName, ip: probeIP, hid: "dummy"})
 
-@sio.event
-async def TryRegisterProbe(sid, probeName, probeIP):
-    print("Trying to register probe {}.".format(probeIP))
-    probes.append({nickname: probeName, ip: probeIP, hid: "dummy"})
+#@sio.event
+#async def TryRemoveProbeByIP(sid, probeIP):
+#    print("Trying to remove probe {}.".format(probbeIP))
 
-@sio.event
-async def TryRemoveProbeByIP(sid, probeIP):
-    print("Trying to remove probe {}.".format(probbeIP))
+#@sio.event
+#async def TryRemoveProbeByName(sid, probeName):
+#    print("Trying to remove probe {}.".format(probeName))
 
-@sio.event
-async def TryRemoveProbeByName(sid, probeName):
-    print("Trying to remove probe {}.".format(probeName))
-
-@sio.event
-async def Client_DiscoveryScan(sid):
-    print("ccc.")    
+#@sio.event
+#async def testCall(sid):
+#    await sio.emit('DiscoverDevicesICMP', {'listIsIPRanges': True, 'searchList': ['10.4.1.10', '10.4.1.100'] })
 
 @sio.event
 def disconnect(sid):
+    for item in probes.items():
+        if item[1]['sid'] == sid:
+            probes[item[0]]['sid'] = -1
     print('disconnect ', sid)
 
 def main(shouldHostProbe, serverIP, serverPort):
@@ -73,8 +89,9 @@ def main(shouldHostProbe, serverIP, serverPort):
     data = cursor.fetchone()
     print("DB Connection established to: ", data)
     if shouldHostProbe == True:
-        hostProbe = subprocess.Popen(['python', '../Probe/ProbeMain.py', "http://{}:{}".format(serverIP, serverPort)])
-        probes.append({ "nickname": "Local Probe", "ip": "localhost", "mac": "dummy" })
+        localProbeID = "12345"
+        hostProbe = subprocess.Popen(['python', '../Probe/ProbeMain.py', "http://{}:{}".format(serverIP, serverPort), localProbeID])
+        probes[localProbeID] = { "nickname": "Local Probe", "ip": "localhost", "mac": "dummy", "sid": -1 }
     web.run_app(app, host=serverIP, port=serverPort)
     dbConn.close()
 

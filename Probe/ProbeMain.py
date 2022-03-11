@@ -13,6 +13,8 @@ from datetime import datetime
 sio = socketio.AsyncClient()
 socket.setdefaulttimeout(0.25)
 
+probeID = "12345"
+
 def singlePing(job_q, results_q):
     DEVNULL = open(os.devnull,'w')
     while True:
@@ -88,7 +90,8 @@ def pingScanner(startAddr, endAddr, tcpScan):
 
 @sio.event
 async def connect():
-    print("connection established")
+    print("CLIENT: {}: connection established. Trying link.".format(probeID))
+    await sio.emit('LinkProbe', probeID)
 
 @sio.event
 async def StartScan(data):
@@ -118,6 +121,6 @@ if __name__ == '__main__':
     serverIP = 'http://localhost:5000'
     if len(sys.argv) > 1:
         serverIP = str(sys.argv[1])
-    #DiscoverDevicesICMP(0, ["10.4.1.10", "10.4.1.100"])
-    #DiscoverDevicesTCP(0, ["10.4.3.150", "10.4.3.250"])
+    if len(sys.argv) > 2:
+        probeID = str(sys.argv[2])
     asyncio.run(probeMain(serverIP))
