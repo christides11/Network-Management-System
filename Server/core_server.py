@@ -12,6 +12,7 @@ import json
 import sys
 sys.path.append('../Probe/')
 import subprocess
+import asyncio
 
 hostProbe = NULL
 sio = socketio.AsyncServer(cors_allowed_origins='*')
@@ -78,7 +79,7 @@ def disconnect(sid):
             probes[item[0]]['sid'] = -1
     print('disconnect ', sid)
 
-def main(shouldHostProbe, serverIP, serverPort):
+async def main(shouldHostProbe, serverIP, serverPort):
     global hostProbe
     dbConn = psycopg2.connect(dbname=dbLogin["DB_NAME"], user=dbLogin["DB_USER"], password=dbLogin["DB_PASS"], host=dbLogin["DB_HOST"])
     cursor = dbConn.cursor()
@@ -89,8 +90,15 @@ def main(shouldHostProbe, serverIP, serverPort):
         localProbeID = "12345"
         hostProbe = subprocess.Popen(['python', '../Probe/ProbeMain.py', "http://{}:{}".format(serverIP, serverPort), localProbeID])
         probes[localProbeID] = { "nickname": "Local Probe", "ip": "localhost", "mac": "dummy", "sid": -1 }
-    web.run_app(app, host=serverIP, port=serverPort)
+    runner = web.AppRunner(app)
+    await runner.setup()
+    site = web.TCPSite(runner, serverIP, serverPort)
+    await site.start()
+    while True:
+        print("Loop while server active.")
+        await asyncio.sleep(1)  # sleep for 1 second.
     dbConn.close()
+    #web.run_app(app, host=serverIP, port=serverPort)
 
 # example of arguments
 # core_server.py HOST_PROBE?:boolean SERVER_IP?:string SERVER_PORT?:string
@@ -105,4 +113,4 @@ if __name__ == '__main__':
         serverIP = str(sys.argv[2])
     if len(sys.argv) > 3:
         serverPort = int(sys.argv[3])
-    main(shouldHostProbe, serverIP, serverPort)
+    asyncio.run(main(shouldHostProbe, serverIP, serverPort))
