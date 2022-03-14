@@ -78,8 +78,9 @@ async def RequestRegisteredDiscoveryScans(sid):
 #    await sio.emit('DiscoverDevicesICMP', {'listIsIPRanges': True, 'searchList': ['10.4.1.10', '10.4.1.100'] })
 
 def TryStartDiscoveryJob():
-    for item in registeredScans:
-        print(item)
+    print("Trying to start a discovery job.")
+    #for item in registeredScans:
+        #print(item)
 
 @sio.event
 def disconnect(sid):
@@ -104,9 +105,8 @@ async def main(shouldHostProbe, serverIP, serverPort):
     site = web.TCPSite(runner, serverIP, serverPort)
     await site.start()
     while True:
-        print("Loop while server active.")
+        await asyncio.sleep(60)  # sleep for 1 minute.
         TryStartDiscoveryJob()
-        await asyncio.sleep(69)  # sleep for 1 minute.
     dbConn.close()
 
 # example of arguments

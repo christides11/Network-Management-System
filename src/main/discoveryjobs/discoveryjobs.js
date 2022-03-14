@@ -2,7 +2,6 @@ import './discoveryjobs.css';
 import React, { useState, useEffect, useContext, useCallback} from 'react';
 import { useNavigate } from 'react-router-dom';
 
-
 function DiscoveryJobsPage({socket}){
 
     const [discoveryJobs, setDiscoveryJobs] = useState(null);
@@ -29,9 +28,13 @@ function DiscoveryJobsPage({socket}){
             <h1>Discovery Jobs Page</h1>
             <button onClick={RequestScanList}>Request Scan List</button>
             {discoveryJobs != null &&
-                <nav>
-                    <h2>Test.</h2>
-                </nav>
+                <ul>
+                    {
+                    discoveryJobs.map(({ discoveryName }, idx) =>
+                        <li key={idx}>{discoveryName}</li>
+                    )
+                    }
+                </ul>
             }
         </div>
     );
