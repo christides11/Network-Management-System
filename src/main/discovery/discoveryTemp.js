@@ -1,8 +1,9 @@
 import './discovery.css';
-import React, { useState, useEffect } from 'react';
-
+import React, { useState, useEffect, useContext, useCallback} from 'react';
+import { useNavigate } from 'react-router-dom';
 
 function DiscoveryPage({socket}){
+    let navigate = useNavigate();
 
     // NETWORK SELECTION
     const [startAddress, setStartAddress] = useState("");
@@ -22,6 +23,21 @@ function DiscoveryPage({socket}){
     const [hopCount, setHopCount] = useState(0);
     const [discoveryTimeout, setDiscoveryTimeout] = useState(10);
 
+    const handleRegisterScanResult = useCallback((data) => {
+        console.log(data.result);
+        if(data.result){
+            navigate("/home");
+        }
+      }, []);
+
+    useEffect(() => {
+        socket.on("Frontend_RegisterDiscoveryScanResult", handleRegisterScanResult)
+
+        return () => {
+            socket.off("Frontend_RegisterDiscoveryScanResult", handleRegisterScanResult)
+        }
+    }, [socket]);
+
     function RegisterScan(){
         console.log("REGISTER SCAN")
         socket.emit('RegisterDiscoveryScan', 
@@ -40,6 +56,8 @@ function DiscoveryPage({socket}){
                 "discoveryTimeout": discoveryTimeout
         })
     }
+
+
 
     return (
         <div className="DiscoveryPage">

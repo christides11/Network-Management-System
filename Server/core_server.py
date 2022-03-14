@@ -48,6 +48,11 @@ async def LinkProbe(sid, probeID):
 async def RegisterDiscoveryScan(sid, data):
     print("Registering scan {} for probe {}.".format(data['discoveryName'], data['probeID']))
     registeredScans.append(data)
+    await sio.emit('Frontend_RegisterDiscoveryScanResult', {'result': True})
+
+@sio.event
+async def RequestRegisteredDiscoveryScans(sid):
+    await sio.emit('ReceiveRegisteredDiscoveryScans', registeredScans, sid)
 
 #@sio.event
 #def ReceiveScanResults(sid, data):
