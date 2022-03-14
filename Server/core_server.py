@@ -46,7 +46,7 @@ async def LinkProbe(sid, probeID):
 # Register a discovery scan to the list of scans.
 @sio.event
 async def RegisterDiscoveryScan(sid, data):
-    print("Registering scan {} for probe {}.".format(data['scanName'], data['probeID']))
+    print("Registering scan {} for probe {}.".format(data['discoveryName'], data['probeID']))
     registeredScans.append(data)
 
 #@sio.event
@@ -72,6 +72,10 @@ async def RegisterDiscoveryScan(sid, data):
 #async def testCall(sid):
 #    await sio.emit('DiscoverDevicesICMP', {'listIsIPRanges': True, 'searchList': ['10.4.1.10', '10.4.1.100'] })
 
+def TryStartDiscoveryJob():
+    for item in registeredScans:
+        print(item)
+
 @sio.event
 def disconnect(sid):
     for item in probes.items():
@@ -96,9 +100,9 @@ async def main(shouldHostProbe, serverIP, serverPort):
     await site.start()
     while True:
         print("Loop while server active.")
-        await asyncio.sleep(1)  # sleep for 1 second.
+        TryStartDiscoveryJob()
+        await asyncio.sleep(69)  # sleep for 1 minute.
     dbConn.close()
-    #web.run_app(app, host=serverIP, port=serverPort)
 
 # example of arguments
 # core_server.py HOST_PROBE?:boolean SERVER_IP?:string SERVER_PORT?:string

@@ -9,9 +9,8 @@ function DiscoveryPage({socket}){
     const [endAddress, setEndAddress] = useState("");
 
     // CREDENTIALS
-    const [snmpCommunity, setSNMPCommunity] = useState("");
-    const [wmiUsername, setWMIUsername] = useState("");
-    const [wmiPassword, setWMIPassword] = useState("");
+    const [snmpCommunity, setSNMPCommunity] = useState(0);
+    const [wmi, setWMI] = useState(0);
 
     // MONITORING SETTINGS
     const [discoveryName, setDiscoveryName] = useState("");
@@ -25,7 +24,21 @@ function DiscoveryPage({socket}){
 
     function RegisterScan(){
         console.log("REGISTER SCAN")
-        socket.emit('RegisterDiscoveryScan', "Test Scan", 0, {});
+        socket.emit('RegisterDiscoveryScan', 
+        {
+                "probeID": 0,
+                "discoveryName": discoveryName, 
+                "addressRanges": [[startAddress, endAddress]],
+                "snmpCommunity": 0,
+                "wmi": 0,
+                "icmpRespondersOnly": icmpRespondersOnly,
+                "snmpTimeout": snmpTimeout,
+                "scanTimeout": scanTimeout,
+                "snmpRetries": snmpRetries,
+                "wmiRetries": wmiRetries,
+                "hopCount": hopCount,
+                "discoveryTimeout": discoveryTimeout
+        })
     }
 
     return (
@@ -42,12 +55,10 @@ function DiscoveryPage({socket}){
             <br/><h2>Monitoring Credentials</h2>
             <h3>SNMP</h3>
             <label htmlFor="snmpCommunity">SNMP Community:</label>
-            <input id="snmpCommunity" value={snmpCommunity} onInput={e => setSNMPCommunity(e.target.value)} /><br/>
+            <input type="number" id="snmpCommunity" value={snmpCommunity} onInput={e => setSNMPCommunity(e.target.value)} /><br/>
             <h3>WMI</h3>
-            <label htmlFor="wmiUsername">WMI Username:</label>
-            <input id="wmiUsername" value={wmiUsername} onInput={e => setWMIUsername(e.target.value)} /><br/>
-            <label htmlFor="wmiPassword">WMI Password:</label>
-            <input id="wmiPassword" value={wmiPassword} onInput={e => setWMIPassword(e.target.value)} /><br/>
+            <label htmlFor="wmiUsername">WMI:</label>
+            <input type="number" id="wmiUsername" value={wmi} onInput={e => setWMI(e.target.value)} /><br/>
 
             <br/><h2>Monitoring Settings</h2>
             <label htmlFor="dName">Discovery Name:</label>
@@ -65,7 +76,7 @@ function DiscoveryPage({socket}){
             <label htmlFor="hopCount">Hop Count:</label>
             <input type="number" id="hopCount" value={hopCount} onInput={e => setHopCount(e.target.value)} /><br/>
             <label htmlFor="discoveryTimeout">Discovery Timeout (minutes):</label>
-            <input type="number" id="discoveryTimeout" value={hopCount} onInput={e => setDiscoveryTimeout(e.target.value)} /><br/>
+            <input type="number" id="discoveryTimeout" value={discoveryTimeout} onInput={e => setDiscoveryTimeout(e.target.value)} /><br/>
             <br/>
             <br/>
             <button onClick={RegisterScan}>Register Scan</button>
