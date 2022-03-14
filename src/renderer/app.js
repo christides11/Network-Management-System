@@ -12,6 +12,7 @@ import Navbar from '../components/navbar/navbar';
 import Home from '../main/home/home';
 import { socket, SocketContext } from '../api/socket';
 import './app.css';
+import DiscoveryJobsPage from '../main/discoveryjobs/discoveryjobs';
 
 export default function App(){
 
@@ -35,6 +36,7 @@ export default function App(){
                 <Route path="/device" element={<DevicePage />} />
                 <Route path="/devices" element={<DevicesPage />} />
                 <Route path="/discovery" element={<DiscoveryPage socket={socket} />} />
+                <Route path="/discoveryjobs" element={<DiscoveryJobsPage socket={socket} />} />
                 <Route path='/alerts' element={<Alerts/>} />
                 <Route path='/eventlog' element={<EventLog />} />
                 <Route

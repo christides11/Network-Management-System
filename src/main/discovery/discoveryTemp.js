@@ -26,7 +26,7 @@ function DiscoveryPage({socket}){
     const handleRegisterScanResult = useCallback((data) => {
         console.log(data.result);
         if(data.result){
-            navigate("/home");
+            navigate("/discoveryjobs");
         }
       }, []);
 
