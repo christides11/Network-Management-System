@@ -1,6 +1,7 @@
 import './discovery.css';
 import React, { useState, useEffect, useContext, useCallback} from 'react';
 import { useNavigate } from 'react-router-dom';
+import moment from 'moment';
 
 function DiscoveryPage({socket}){
     let navigate = useNavigate();
@@ -44,6 +45,7 @@ function DiscoveryPage({socket}){
         {
                 "probeID": 0,
                 "discoveryName": discoveryName, 
+                "scanType": 0, // Address Range(s) or Subnet(s)
                 "addressRanges": [[startAddress, endAddress]],
                 "snmpCommunity": 0,
                 "wmi": 0,
@@ -53,7 +55,9 @@ function DiscoveryPage({socket}){
                 "snmpRetries": snmpRetries,
                 "wmiRetries": wmiRetries,
                 "hopCount": hopCount,
-                "discoveryTimeout": discoveryTimeout
+                "discoveryTimeout": discoveryTimeout,
+                "nextDiscoveryTime": moment(moment.now()).toDate(),
+                "discoveryInterval": moment(moment.now()).add(1, 'm').toDate()
         })
     }
 
