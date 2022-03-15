@@ -13,6 +13,7 @@ import sys
 sys.path.append('../Probe/')
 import subprocess
 import asyncio
+from datetime import datetime
 
 hostProbe = NULL
 sio = socketio.AsyncServer(cors_allowed_origins='*')
@@ -46,7 +47,7 @@ async def LinkProbe(sid, probeID):
 # Register a discovery scan to the list of scans.
 @sio.event
 async def RegisterDiscoveryScan(sid, data):
-    print("Registering scan {} for probe {}.".format(data['discoveryName'], data['probeID']))
+    print("Registering scan {} for probe {}. Next scan is at {}.".format(data['discoveryName'], data['probeID'], data['nextDiscoveryTime']))
     registeredScans.append(data)
     await sio.emit('Frontend_RegisterDiscoveryScanResult', {'result': True})
 
@@ -79,8 +80,11 @@ async def RequestRegisteredDiscoveryScans(sid):
 
 def TryStartDiscoveryJob():
     print("Trying to start a discovery job.")
-    #for item in registeredScans:
-        #print(item)
+    for item in registeredScans:
+        itemTime = datetime.strptime(item['nextDiscoveryTime'], '%Y-%m-%dT%H:%M:%S.%fZ')
+        if itemTime < datetime.now():
+            continue
+        print("Discovery Job", item['discoveryName'], "starting...")
 
 @sio.event
 def disconnect(sid):
