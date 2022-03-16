@@ -35,7 +35,7 @@ fetch('http://127.0.0.1:5000/')
   .then(response => response.text())
   .then(text => console.log(text))
 
-// For JSON data back
+// For JSON data...
 fetch('http://127.0.0.1:5000/network/')
   .then(response => response.json())
   .then(data => console.log(data))
@@ -51,3 +51,42 @@ You can also use Postman.
 
 
 ## API Reference
+<details>
+  <summary>Network</summary>
+  
+  ## Heading
+  1. A numbered
+  2. list
+     * With some
+     * Sub bullets
+</details>
+
+<details>
+  <summary>Probes</summary>
+  
+  ## Heading
+  1. A numbered
+  2. list
+     * With some
+     * Sub bullets
+</details>
+
+<details>
+  <summary>Devices</summary>
+  
+  ## Heading
+  1. A numbered
+  2. list
+     * With some
+     * Sub bullets
+</details>
+
+<details>
+  <summary>Sensors</summary>
+  
+  ## Heading
+  1. A numbered
+  2. list
+     * With some
+     * Sub bullets
+</details>
