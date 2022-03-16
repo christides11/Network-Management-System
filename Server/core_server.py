@@ -55,11 +55,11 @@ async def RegisterDiscoveryScan(sid, data):
 async def RequestRegisteredDiscoveryScans(sid):
     await sio.emit('ReceiveRegisteredDiscoveryScans', registeredScans, sid)
 
-#@sio.event
-#def ReceiveScanResults(sid, data):
-#    print('SERVER:')
-#    for x in range(len(data["resultList"])):
-#        print(data["resultList"][x])
+@sio.event
+def ReceiveScanResults(sid, data):
+    print('SERVER:')
+    for x in range(len(data["resultList"])):
+        print(data["resultList"][x])
 
 #@sio.event
 #async def TryRegisterProbe(sid, probeName, probeIP):
@@ -84,7 +84,14 @@ def TryStartDiscoveryJob():
         itemTime = datetime.strptime(item['nextDiscoveryTime'], '%Y-%m-%dT%H:%M:%S.%fZ')
         if itemTime < datetime.now():
             continue
-        print("Discovery Job", item['discoveryName'], "starting...")
+        if item['probeID'] in probes:
+            print("Discovery Job", item['discoveryName'], "starting...")
+            loop = asyncio.get_event_loop()
+            loop.create_task(sio.emit('Probe_RunDiscoverScan', item, probes[item['probeID']]['sid']))
+            #item['nextDiscoveryTime'] = ...
+        else:
+            print("DISCOVERY ERROR: Probe", item['probeID'], "not found.")
+
 
 @sio.event
 def disconnect(sid):

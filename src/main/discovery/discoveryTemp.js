@@ -43,7 +43,7 @@ function DiscoveryPage({socket}){
         console.log("REGISTER SCAN")
         socket.emit('RegisterDiscoveryScan', 
         {
-                "probeID": 0,
+                "probeID": "12345",
                 "discoveryName": discoveryName, 
                 "scanType": 0, // Address Range(s) or Subnet(s)
                 "addressRanges": [[startAddress, endAddress]],
