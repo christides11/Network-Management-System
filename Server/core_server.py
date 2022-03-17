@@ -27,7 +27,7 @@ probes = {}
 dbConn = NULL
 
 # TEMPORARY DATA.
-# These shouild be in the database idealy
+# These should be in the database
 registeredScans = []
 scanResults = []
 
@@ -77,21 +77,21 @@ def ReceiveScanResults(sid, data):
 
 def TryStartDiscoveryJob():
     print("Trying to start a discovery job.")
-    #print("NOW: ", datetime.now().strftime('%Y-%m-%d %H:%M:%S.%f'))
-    for item in registeredScans:
-        s = item['nextDiscoveryTime'] / 1000.0
-        print(datetime.fromtimestamp(s).strftime('%Y-%m-%d %H:%M:%S.%f'))
-        itemTime = datetime.fromtimestamp(s)#datetime.strptime(item['nextDiscoveryTime'], '%Y-%m-%dT%H:%M:%S.%fZ')
+    print("NOW: ", datetime.now().strftime('%Y-%m-%d %H:%M:%S.%f'))
+    for x in range(len(registeredScans)):
+        s = registeredScans[x]['nextDiscoveryTime'] / 1000.0
+        print("ITEM TIME: ", datetime.fromtimestamp(s).strftime('%Y-%m-%d %H:%M:%S.%f'))
+        itemTime = datetime.fromtimestamp(s)
         if itemTime > datetime.now():
             continue
-        if item['probeID'] in probes:
-            print("Discovery Job", item['discoveryName'], "starting...")
+        if registeredScans[x]['probeID'] in probes:
+            print("Discovery Job", registeredScans[x]['discoveryName'], "starting...")
             loop = asyncio.get_event_loop()
-            loop.create_task(sio.emit('Probe_RunDiscoverScan', item, probes[item['probeID']]['sid']))
-            item['nextDiscoveryTime'] = item['nextDiscoveryTime'] + item['discoveryInterval']
-            #print("NEXT TIME: ", datetime.fromtimestamp(item['nextDiscoveryTime'] / 1000.0).strftime('%Y-%m-%d %H:%M:%S.%f'))
+            loop.create_task(sio.emit('Probe_RunDiscoverScan', registeredScans[x], probes[registeredScans[x]['probeID']]['sid']))
+            registeredScans[x]['nextDiscoveryTime'] += registeredScans[x]['discoveryInterval']
+            print("NEXT TIME: ", datetime.fromtimestamp(registeredScans[x]['nextDiscoveryTime'] / 1000.0).strftime('%Y-%m-%d %H:%M:%S.%f'))
         else:
-            print("DISCOVERY ERROR: Probe", item['probeID'], "not found.")
+            print("DISCOVERY ERROR: Probe", registeredScans[x]['probeID'], "not found.")
 
 
 @sio.event
