@@ -2,6 +2,8 @@ import './discovery.css';
 import React, { useState, useEffect, useContext, useCallback} from 'react';
 import { useNavigate } from 'react-router-dom';
 import moment from 'moment';
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
 
 function DiscoveryPage({socket}){
     let navigate = useNavigate();
@@ -23,6 +25,10 @@ function DiscoveryPage({socket}){
     const [wmiRetries, setWMIRetries] = useState(2);
     const [hopCount, setHopCount] = useState(0);
     const [discoveryTimeout, setDiscoveryTimeout] = useState(10);
+
+    const [firstScanTime, setFirstScanTime] = useState(new Date());
+    const [nextScanTime, setNextScanTime] = useState(new Date());
+    const [discoveryIsRepeating, setDiscoveryIsRepeating] = useState(false);
 
     const handleRegisterScanResult = useCallback((data) => {
         console.log(data.result);
@@ -56,8 +62,8 @@ function DiscoveryPage({socket}){
                 "wmiRetries": wmiRetries,
                 "hopCount": hopCount,
                 "discoveryTimeout": discoveryTimeout,
-                "nextDiscoveryTime": moment(moment.now()).toDate().valueOf(),
-                "discoveryInterval": moment(moment.now()).add(1, 'm').diff(moment.now()).valueOf()
+                "nextDiscoveryTime": moment(firstScanTime).toDate().valueOf(),
+                "discoveryInterval": discoveryIsRepeating ? moment(nextScanTime).add(1, 'm').diff(moment(firstScanTime)).valueOf() : null
         })
     }
 
@@ -85,7 +91,7 @@ function DiscoveryPage({socket}){
             <br/><h2>Monitoring Settings</h2>
             <label htmlFor="dName">Discovery Name:</label>
             <input id="dName" value={discoveryName} onInput={e => setDiscoveryName(e.target.value)} /><br/>
-            <input type="checkbox" id="icmpResponders" value={icmpRespondersOnly} onInput={e => setICMPResponders(e.target.value)} />
+            <input type="checkbox" id="icmpResponders" value={icmpRespondersOnly} onInput={e => setICMPResponders(e.target.checked)} />
             <label htmlFor="icmpResponders">  Include Devices with only ICMP response?</label><br/>
             <label htmlFor="snmpTimeout">SNMP Timeout (ms):</label>
             <input type="number" id="snmpTimeout" value={snmpTimeout} onInput={e => setSNMPTimeout(e.target.value)} /><br/>
@@ -99,6 +105,21 @@ function DiscoveryPage({socket}){
             <input type="number" id="hopCount" value={hopCount} onInput={e => setHopCount(e.target.value)} /><br/>
             <label htmlFor="discoveryTimeout">Discovery Timeout (minutes):</label>
             <input type="number" id="discoveryTimeout" value={discoveryTimeout} onInput={e => setDiscoveryTimeout(e.target.value)} /><br/>
+            <a>Discovery Time</a>
+            <DatePicker selected={firstScanTime} onChange={(date) => setFirstScanTime(date)} showTimeSelect dateFormat="MMMM d, yyyy h:mm aa" />
+            <label htmlFor="repeatingScan">Repeating Scan?</label><br/>
+            <input type="checkbox" id="repeatingScan" value={discoveryIsRepeating} onInput={e => setDiscoveryIsRepeating(e.target.checked)} />
+            {discoveryIsRepeating == true &&
+            <nav>
+                <a>Next Discovery Time</a>
+                <DatePicker
+                    selected={nextScanTime}
+                    onChange={(date) => setNextScanTime(date)}
+                    showTimeSelect
+                    dateFormat="MMMM d, yyyy h:mm aa"
+                />
+            </nav>
+            }
             <br/>
             <br/>
             <button onClick={RegisterScan}>Register Scan</button>
