@@ -80,7 +80,7 @@ async def Probe_RunDiscoverScan(data):
         case 0:
             print("SCAN TYPE: Address Ranges")
             result = pingScanner(data["addressRanges"][0][0], data["addressRanges"][0][1])
-            await sio.emit('ReceiveScanResults', {"resultList": result})
+            await sio.emit('ReceiveScanResults', {'discoveryName': data['discoveryName'], "resultList": result})
         case 1:
             print("SCAN TYPE: Subnets")
 

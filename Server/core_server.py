@@ -60,6 +60,7 @@ def ReceiveScanResults(sid, data):
     print('SERVER:')
     for x in range(len(data["resultList"])):
         print(data["resultList"][x])
+    scanResults.append(data)
 
 #@sio.event
 #async def TryRegisterProbe(sid, probeName, probeIP):
@@ -73,10 +74,6 @@ def ReceiveScanResults(sid, data):
 #@sio.event
 #async def TryRemoveProbeByName(sid, probeName):
 #    print("Trying to remove probe {}.".format(probeName))
-
-#@sio.event
-#async def testCall(sid):
-#    await sio.emit('DiscoverDevicesICMP', {'listIsIPRanges': True, 'searchList': ['10.4.1.10', '10.4.1.100'] })
 
 def TryStartDiscoveryJob():
     print("Trying to start a discovery job.")
