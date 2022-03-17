@@ -34,8 +34,8 @@ function DiscoveryLog({socket}){
                             <nav>
                                 <li key={idx}>{discoveryName}</li>
                                 {
-                                    discoveryLogs[idx]["resultList"].map(({ result }, idp) => 
-                                        <li key={idx*100+idp}>result</li>
+                                    discoveryLogs[idx]["resultList"].map((x, idp) => 
+                                        <li key={idx*100+idp}>{x}</li>
                                     )
                                 }
                             </nav>
