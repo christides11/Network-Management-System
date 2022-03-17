@@ -56,8 +56,8 @@ function DiscoveryPage({socket}){
                 "wmiRetries": wmiRetries,
                 "hopCount": hopCount,
                 "discoveryTimeout": discoveryTimeout,
-                "nextDiscoveryTime": moment(moment.now()).toDate(),
-                "discoveryInterval": moment(moment.now()).add(1, 'm').toDate()
+                "nextDiscoveryTime": moment(moment.now()).toDate().valueOf(),
+                "discoveryInterval": moment(moment.now()).add(1, 'm').diff(moment.now()).valueOf()
         })
     }
 

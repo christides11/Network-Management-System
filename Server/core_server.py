@@ -77,15 +77,19 @@ def ReceiveScanResults(sid, data):
 
 def TryStartDiscoveryJob():
     print("Trying to start a discovery job.")
+    #print("NOW: ", datetime.now().strftime('%Y-%m-%d %H:%M:%S.%f'))
     for item in registeredScans:
-        itemTime = datetime.strptime(item['nextDiscoveryTime'], '%Y-%m-%dT%H:%M:%S.%fZ')
-        if itemTime < datetime.now():
+        s = item['nextDiscoveryTime'] / 1000.0
+        print(datetime.fromtimestamp(s).strftime('%Y-%m-%d %H:%M:%S.%f'))
+        itemTime = datetime.fromtimestamp(s)#datetime.strptime(item['nextDiscoveryTime'], '%Y-%m-%dT%H:%M:%S.%fZ')
+        if itemTime > datetime.now():
             continue
         if item['probeID'] in probes:
             print("Discovery Job", item['discoveryName'], "starting...")
             loop = asyncio.get_event_loop()
             loop.create_task(sio.emit('Probe_RunDiscoverScan', item, probes[item['probeID']]['sid']))
-            #item['nextDiscoveryTime'] = ...
+            item['nextDiscoveryTime'] = item['nextDiscoveryTime'] + item['discoveryInterval']
+            #print("NEXT TIME: ", datetime.fromtimestamp(item['nextDiscoveryTime'] / 1000.0).strftime('%Y-%m-%d %H:%M:%S.%f'))
         else:
             print("DISCOVERY ERROR: Probe", item['probeID'], "not found.")
 
@@ -113,7 +117,7 @@ async def main(shouldHostProbe, serverIP, serverPort):
     site = web.TCPSite(runner, serverIP, serverPort)
     await site.start()
     while True:
-        await asyncio.sleep(60)  # sleep for 1 minute.
+        await asyncio.sleep(20)  # sleep for 1 minute.
         TryStartDiscoveryJob()
     dbConn.close()
 
