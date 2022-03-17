@@ -1,9 +1,48 @@
 import './discoverylog.css';
+import React, { useState, useEffect, useContext, useCallback} from 'react';
+import { useNavigate } from 'react-router-dom';
 
-function DiscoveryLog(){
+function DiscoveryLog({socket}){
+
+    const [discoveryLogs, setDiscoveryLogs] = useState(null);
+
+    const receiveScanLogs = useCallback((data) => {
+        console.log(data);
+        setDiscoveryLogs(data);
+      }, []);
+
+    useEffect(() => {
+        socket.on("ReceiveScanLogs", receiveScanLogs)
+
+        return () => {
+            socket.off("ReceiveScanLogs", receiveScanLogs)
+        }
+    }, [socket]);
+
+    function RequestScanLogs(){
+        socket.emit('RequestScanLogs');
+    }
+
     return (
         <div className="DiscoveryLog">
             <h1>Discovery Log</h1>
+            <button onClick={RequestScanLogs}>Update</button>
+            {discoveryLogs != null &&
+                <ul>
+                    {
+                        discoveryLogs.map(({ discoveryName }, idx) =>
+                            <nav>
+                                <li key={idx}>{discoveryName}</li>
+                                {
+                                    discoveryLogs[idx]["resultList"].map(({ result }, idp) => 
+                                        <li key={idx*100+idp}>result</li>
+                                    )
+                                }
+                            </nav>
+                        )
+                    }
+                </ul>
+            }
         </div>
     );
 }

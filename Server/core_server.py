@@ -62,6 +62,10 @@ def ReceiveScanResults(sid, data):
         print(data["resultList"][x])
     scanResults.append(data)
 
+@sio.event
+async def RequestScanLogs(sid):
+    await sio.emit('ReceiveScanLogs', scanResults)
+
 #@sio.event
 #async def TryRegisterProbe(sid, probeName, probeIP):
 #    print("Trying to register probe {}.".format(probeIP))
