@@ -88,6 +88,9 @@ def TryStartDiscoveryJob():
             print("Discovery Job", registeredScans[x]['discoveryName'], "starting...")
             loop = asyncio.get_event_loop()
             loop.create_task(sio.emit('Probe_RunDiscoverScan', registeredScans[x], probes[registeredScans[x]['probeID']]['sid']))
+            if registeredScans[x]['discoveryInterval'] == NULL:
+                #TODO remove scan since it's a one off.
+                continue
             registeredScans[x]['nextDiscoveryTime'] += registeredScans[x]['discoveryInterval']
             print("NEXT TIME: ", datetime.fromtimestamp(registeredScans[x]['nextDiscoveryTime'] / 1000.0).strftime('%Y-%m-%d %H:%M:%S.%f'))
         else:
