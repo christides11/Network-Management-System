@@ -54,8 +54,16 @@ async def RequestLogin(sid, username, password):
     sessionID = NULL
     await sio.emit('ReceiveLoginResult', {'sessionID': sessionID}, sid)
 
+# Verifies if the given sessionID is valid.
 def VerifySession(sessionID):
     return True if sessionID in currentSessions else False
+
+# Client tries to register with given credentials.
+# If successful, returns true.
+@sio.event
+async def RequestRegistration(sid, username, password):
+    print("Trying to register user.")
+    await sio.emit('ReceiveRegistrationResult', {'result': False}, sid)
 
 # Register a discovery scan to the list of scans.
 @sio.event
