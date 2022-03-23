@@ -1,0 +1,6 @@
+{
+    "DB_HOST": "ADDRESS HERE",
+    "DB_NAME": "DB NAME",
+    "DB_USER": "DB USER",
+    "DB_PASS": "DB PASSWORD"
+}
