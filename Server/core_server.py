@@ -26,12 +26,11 @@ f.close()
 probes = {}
 dbConn = NULL
 
+currentSessions = []
 # TEMPORARY DATA.
 # These should be in the database
 registeredScans = []
 scanResults = []
-
-currentSessions = []
 
 @sio.event
 async def connect(sid, environ):
@@ -46,6 +45,8 @@ async def LinkProbe(sid, probeID):
     probes[probeID]['sid'] = sid
     print("SERVER: Linked sid {} to probe {}".format(sid, probeID))
 
+### --- LOGIN AND REGISTRATION --- ###
+
 # Client tries to login with the given credentials. 
 # If successful, a sessionID is returned.
 @sio.event
@@ -54,16 +55,18 @@ async def RequestLogin(sid, username, password):
     sessionID = NULL
     await sio.emit('ReceiveLoginResult', {'sessionID': sessionID}, sid)
 
-# Verifies if the given sessionID is valid.
-def VerifySession(sessionID):
-    return True if sessionID in currentSessions else False
-
 # Client tries to register with given credentials.
 # If successful, returns true.
 @sio.event
 async def RequestRegistration(sid, username, password):
     print("Trying to register user.")
     await sio.emit('ReceiveRegistrationResult', {'result': False}, sid)
+
+# Verifies if the given sessionID is valid.
+def VerifySession(sessionID):
+    return True if sessionID in currentSessions else False
+
+### --- DISCOVERY SCANNING --- ###
 
 # Register a discovery scan to the list of scans.
 @sio.event
@@ -118,6 +121,8 @@ def disconnect(sid):
             probes[item[0]]['sid'] = -1
     print('disconnect ', sid)
 
+### --- INITIALIZATION --- ###
+
 async def main(shouldHostProbe, serverIP, serverPort):
     global hostProbe
     dbConn = psycopg2.connect(dbname=dbLogin["DB_NAME"], user=dbLogin["DB_USER"], password=dbLogin["DB_PASS"], host=dbLogin["DB_HOST"])
@@ -138,7 +143,7 @@ async def main(shouldHostProbe, serverIP, serverPort):
         TryStartDiscoveryJob()
     dbConn.close()
 
-# example of arguments
+# example of arguments.
 # core_server.py HOST_PROBE?:boolean SERVER_IP?:string SERVER_PORT?:string
 if __name__ == '__main__':
     shouldHostProbe = False
