@@ -1,6 +1,5 @@
 import './discoverylog.css';
-import React, { useState, useEffect, useContext, useCallback} from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect, useCallback} from 'react';
 
 function DiscoveryLog({socket}){
 

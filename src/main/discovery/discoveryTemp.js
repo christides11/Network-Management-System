@@ -29,6 +29,7 @@ function DiscoveryPage({socket}){
     const [firstScanTime, setFirstScanTime] = useState(new Date());
     const [nextScanTime, setNextScanTime] = useState(new Date());
     const [discoveryIsRepeating, setDiscoveryIsRepeating] = useState(false);
+    //const [scanImmediate, setScanImmediate] = useState(false);
 
     const handleRegisterScanResult = useCallback((data) => {
         console.log(data.result);
@@ -67,7 +68,9 @@ function DiscoveryPage({socket}){
         })
     }
 
+    //<input type="checkbox" id="runScanNow" value={scanImmediate} onInput={e => setScanImmediate(e.target.checked)} />
 
+    console.log(moment.now().valueOf());
 
     return (
         <div className="DiscoveryPage">
@@ -106,6 +109,7 @@ function DiscoveryPage({socket}){
             <label htmlFor="discoveryTimeout">Discovery Timeout (minutes):</label>
             <input type="number" id="discoveryTimeout" value={discoveryTimeout} onInput={e => setDiscoveryTimeout(e.target.value)} /><br/>
             <a>Discovery Time</a>
+            <label htmlFor="runScanNow">Run scan now?</label><br/>
             <DatePicker selected={firstScanTime} onChange={(date) => setFirstScanTime(date)} showTimeSelect dateFormat="MMMM d, yyyy h:mm aa" />
             <label htmlFor="repeatingScan">Repeating Scan?</label><br/>
             <input type="checkbox" id="repeatingScan" value={discoveryIsRepeating} onInput={e => setDiscoveryIsRepeating(e.target.checked)} />

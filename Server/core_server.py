@@ -31,6 +31,8 @@ dbConn = NULL
 registeredScans = []
 scanResults = []
 
+currentSessions = []
+
 @sio.event
 async def connect(sid, environ):
     print("connect ", sid)
@@ -43,6 +45,17 @@ async def LinkProbe(sid, probeID):
         return
     probes[probeID]['sid'] = sid
     print("SERVER: Linked sid {} to probe {}".format(sid, probeID))
+
+# Client tries to login with the given credentials. 
+# If successful, a sessionID is returned.
+@sio.event
+async def RequestLogin(sid, username, password):
+    print("Trying to login with given credentials.")
+    sessionID = NULL
+    await sio.emit('ReceiveLoginResult', {'sessionID': sessionID}, sid)
+
+def VerifySession(sessionID):
+    return True if sessionID in currentSessions else False
 
 # Register a discovery scan to the list of scans.
 @sio.event
@@ -66,19 +79,8 @@ def ReceiveScanResults(sid, data):
 async def RequestScanLogs(sid):
     await sio.emit('ReceiveScanLogs', scanResults)
 
-#@sio.event
-#async def TryRegisterProbe(sid, probeName, probeIP):
-#    print("Trying to register probe {}.".format(probeIP))
-#    probes.append({nickname: probeName, ip: probeIP, hid: "dummy"})
-
-#@sio.event
-#async def TryRemoveProbeByIP(sid, probeIP):
-#    print("Trying to remove probe {}.".format(probbeIP))
-
-#@sio.event
-#async def TryRemoveProbeByName(sid, probeName):
-#    print("Trying to remove probe {}.".format(probeName))
-
+# Goes through every registered discovery job and tries to start ones
+# whose time to start has passed.
 def TryStartDiscoveryJob():
     print("Trying to start a discovery job.")
     print("NOW: ", datetime.now().strftime('%Y-%m-%d %H:%M:%S.%f'))
@@ -133,7 +135,7 @@ async def main(shouldHostProbe, serverIP, serverPort):
 if __name__ == '__main__':
     shouldHostProbe = False
     serverIP = 'localhost'
-    serverPort = 8080
+    serverPort = 8182
     if len(sys.argv) > 1:
         if sys.argv[1].lower() == 'true':
             shouldHostProbe = True
