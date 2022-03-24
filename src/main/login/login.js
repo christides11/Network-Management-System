@@ -2,7 +2,7 @@ import './login.css';
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-function LoginPage({socket}){
+function LoginPage({socket, sessionID, setSessionID}){
     const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
 
@@ -15,14 +15,19 @@ function LoginPage({socket}){
         //navigate("/summary");
     }
 
-    /*
+    function ReceiveLoginResult(sessionID){
+        console.log(sessionID);
+        if(sessionID == null) return;
+        setSessionID(sessionID);
+        navigate("/summary");
+    }
+    
     useEffect(() => {
-        console.log("b");
-        if(socket != null){
-            console.log(window.location.pathname);
+        socket.on('ReceiveLoginResult', ReceiveLoginResult)
+        return () => {
+            socket.off('ReceiveLoginResult', ReceiveLoginResult)
         }
-        return () => { }
-    }, [socket]);*/
+    }, [socket]);
 
     return (
         <div className="LoginPage">

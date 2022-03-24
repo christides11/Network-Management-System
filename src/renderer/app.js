@@ -17,11 +17,13 @@ import DiscoveryLog from '../main/discoverylog/discoverylog';
 
 export default function App(){
 
+    const [sessionID, setSessionID] = useState("");
+
     useEffect(() => {
-        console.log("a");
+        /*console.log("a");
         if(socket != null){
             console.log(window.location.pathname);
-        }
+        }*/
         return () => { }
     }, []);
 
@@ -29,7 +31,7 @@ export default function App(){
         <Router>
             <Navbar />
             <Routes>
-                <Route path="/" element={<LoginPage socket={socket} />} />
+                <Route path="/" element={<LoginPage socket={socket} sessionID={sessionID} setSessionID={setSessionID} />} />
                 <Route path='/home' exact element={<Home />} />
                 <Route path="/summary" element={<SummaryPage socket={socket} />} />
                 <Route path="/device" element={<DevicePage />} />
