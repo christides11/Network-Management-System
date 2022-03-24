@@ -94,9 +94,19 @@ async def RequestDiscoveryScanList(sid):
 # Add a discovery scan to the database.
 @sio.event
 async def RegisterDiscoveryScan(sid, data):
-    print("Registering scan {} for probe {}. Next scan is at {}.".format(data['discoveryName'], data['probeID'], data['nextDiscoveryTime']))
-    #registeredScans.append(data)
-    await sio.emit('Frontend_RegisterDiscoveryScanResult', {'result': True})
+    cursor = dbConn.cursor()
+    result = False
+    try:
+        cursor.execute('INSERT INTO public."scanParameters" VALUES ({}, \'{}\', {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, \'{}\', \'{}\', \'{}\', {}, {})'
+        .format(data['network'], data['discoveryName'], data['icmpRespondersOnly'], data['snmpTimeout'], data['scanTimeout'], data['snmpRetries'], data['wmiRetries'], 
+            data['hopCount'], data['discoveryTimeout'], data['nextDiscoveryTime'], data['discoveryInterval'], data['probeID'], data['scanType'], data['ipStartRanges'],
+            data['ipEndRanges'], data['subnets'], data['snmpCredentials'], data['wmiCredentials'] ))
+        print("Registering scan {} for probe {}. Next scan is at {}.".format(data['discoveryName'], data['probeID'], data['nextDiscoveryTime']))
+        result = True
+    except:
+        print("Error registering scan {}".format(data['discoveryName']))
+    finally:
+        await sio.emit('Frontend_RegisterDiscoveryScanResult', {'result': result})
 
 # Receive scan results from a probe.
 @sio.event
@@ -118,23 +128,23 @@ async def RequestScanLogs(sid):
 def TryStartDiscoveryJob():
     print("Trying to start a discovery job.")
     #print("NOW: ", datetime.now().strftime('%Y-%m-%d %H:%M:%S.%f'))
-    for x in range(len(registeredScans)):
-        s = registeredScans[x]['nextDiscoveryTime'] / 1000.0
-        print("ITEM TIME: ", datetime.fromtimestamp(s).strftime('%Y-%m-%d %H:%M:%S.%f'))
-        itemTime = datetime.fromtimestamp(s)
-        if itemTime > datetime.now():
-            continue
-        if registeredScans[x]['probeID'] in probes:
-            print("Discovery Job", registeredScans[x]['discoveryName'], "starting...")
-            loop = asyncio.get_event_loop()
-            loop.create_task(sio.emit('Probe_RunDiscoverScan', registeredScans[x], probes[registeredScans[x]['probeID']]['sid']))
-            if registeredScans[x]['discoveryInterval'] == NULL:
-                #TODO remove scan since it's a one off.
-                continue
-            registeredScans[x]['nextDiscoveryTime'] += registeredScans[x]['discoveryInterval']
-            print("NEXT TIME: ", datetime.fromtimestamp(registeredScans[x]['nextDiscoveryTime'] / 1000.0).strftime('%Y-%m-%d %H:%M:%S.%f'))
-        else:
-            print("DISCOVERY ERROR: Probe", registeredScans[x]['probeID'], "not found.")
+    #for x in range(len(registeredScans)):
+    #    s = registeredScans[x]['nextDiscoveryTime'] / 1000.0
+    #    print("ITEM TIME: ", datetime.fromtimestamp(s).strftime('%Y-%m-%d %H:%M:%S.%f'))
+    #    itemTime = datetime.fromtimestamp(s)
+    #    if itemTime > datetime.now():
+    #        continue
+    #    if registeredScans[x]['probeID'] in probes:
+    #        print("Discovery Job", registeredScans[x]['discoveryName'], "starting...")
+    #        loop = asyncio.get_event_loop()
+    #        loop.create_task(sio.emit('Probe_RunDiscoverScan', registeredScans[x], probes[registeredScans[x]['probeID']]['sid']))
+    #        if registeredScans[x]['discoveryInterval'] == NULL:
+    #            #TODO remove scan since it's a one off.
+    #            continue
+    #        registeredScans[x]['nextDiscoveryTime'] += registeredScans[x]['discoveryInterval']
+    #        print("NEXT TIME: ", datetime.fromtimestamp(registeredScans[x]['nextDiscoveryTime'] / 1000.0).strftime('%Y-%m-%d %H:%M:%S.%f'))
+    #    else:
+    #        print("DISCOVERY ERROR: Probe", registeredScans[x]['probeID'], "not found.")
 
 
 @sio.event

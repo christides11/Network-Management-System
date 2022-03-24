@@ -50,12 +50,14 @@ function DiscoveryPage({socket}){
         console.log("REGISTER SCAN")
         socket.emit('RegisterDiscoveryScan', 
         {
-                "probeID": "12345",
+                "probeID": 9,
                 "discoveryName": discoveryName, 
                 "scanType": 0, // Address Range(s) or Subnet(s)
-                "addressRanges": [[startAddress, endAddress]],
-                "snmpCommunity": 0,
-                "wmi": 0,
+                "ipStartRanges": [startAddress],
+                "ipEndRanges": [endAddress],
+                "subnets": [],
+                "snmpCredentials": [1],
+                "wmiCredentials": [1],
                 "icmpRespondersOnly": icmpRespondersOnly,
                 "snmpTimeout": snmpTimeout,
                 "scanTimeout": scanTimeout,
