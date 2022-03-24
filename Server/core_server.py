@@ -154,6 +154,25 @@ def disconnect(sid):
             probes[item[0]]['sid'] = -1
     print('disconnect ', sid)
 
+### --- CREDENTIALS --- ###
+
+@sio.event
+async def RequestSNMPCredentials(sid):
+    cursor = dbConn.cursor()
+    cursor.execute("SELECT * FROM public.\"SNMP_Credentials\"")
+    record = cursor.fetchall()
+    #if len(record) == 0:
+    #    record = NULL
+    await sio.emit('ReceiveSNMPCredentials', record)
+
+@sio.event
+async def RequestWMICredentials(sid):
+    cursor = dbConn.cursor()
+    cursor.execute("SELECT * FROM public.\"WMI_Credentials\"")
+    record = cursor.fetchall()
+    await sio.emit('ReceiveWMICredentials', record)
+
+
 ### --- INITIALIZATION --- ###
 
 # Grabs various data from the database.

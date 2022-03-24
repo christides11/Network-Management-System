@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import moment from 'moment';
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
+import { InputLabel, Select, MenuItem, Checkbox, FormControlLabel, FormGroup } from '@mui/material';
 
 function DiscoveryPage({socket}){
     let navigate = useNavigate();
@@ -13,7 +14,9 @@ function DiscoveryPage({socket}){
     const [endAddress, setEndAddress] = useState("");
 
     // CREDENTIALS
+    const [snmpCredentials, setSNMPCredentials] = useState([]);
     const [snmpCommunity, setSNMPCommunity] = useState(0);
+    const [wmiCredentials, setWMICredentials] = useState([]);
     const [wmi, setWMI] = useState(0);
 
     // MONITORING SETTINGS
@@ -26,10 +29,9 @@ function DiscoveryPage({socket}){
     const [hopCount, setHopCount] = useState(0);
     const [discoveryTimeout, setDiscoveryTimeout] = useState(10);
 
+    const [immediateScan, setImmediateScan] = useState(false);
     const [firstScanTime, setFirstScanTime] = useState(new Date());
-    const [nextScanTime, setNextScanTime] = useState(new Date());
-    const [discoveryIsRepeating, setDiscoveryIsRepeating] = useState(false);
-    //const [scanImmediate, setScanImmediate] = useState(false);
+    const [repeatType, setRepeatType] = useState(0);
 
     const handleRegisterScanResult = useCallback((data) => {
         console.log(data.result);
@@ -38,11 +40,29 @@ function DiscoveryPage({socket}){
         }
       }, []);
 
+    const receiveSNMPCredentials = useCallback((data) => {
+        setSNMPCredentials(data);
+    });
+
+    const receiveWMICredentials = useCallback((data) => {
+        setWMICredentials(data);
+    })
+
+    useEffect(() => {
+        
+    });
+
     useEffect(() => {
         socket.on("Frontend_RegisterDiscoveryScanResult", handleRegisterScanResult)
+        socket.on("ReceiveSNMPCredentials", receiveSNMPCredentials)
+        socket.on("ReceiveWMICredentials", receiveWMICredentials)
+        socket.emit("RequestSNMPCredentials");
+        socket.emit("RequestWMICredentials");
 
         return () => {
             socket.off("Frontend_RegisterDiscoveryScanResult", handleRegisterScanResult)
+            socket.off("ReceiveSNMPCredentials", receiveSNMPCredentials)
+            socket.off("ReceiveWMICredentials", receiveWMICredentials)
         }
     }, [socket]);
 
@@ -65,14 +85,16 @@ function DiscoveryPage({socket}){
                 "wmiRetries": wmiRetries,
                 "hopCount": hopCount,
                 "discoveryTimeout": discoveryTimeout,
-                "nextDiscoveryTime": moment(firstScanTime).toDate().valueOf(),
-                "discoveryInterval": discoveryIsRepeating ? moment(nextScanTime).add(1, 'm').diff(moment(firstScanTime)).valueOf() : null
+                "nextDiscoveryTime": moment(firstScanTime).toDate().valueOf()
+                //"discoveryInterval": discoveryIsRepeating ? moment(nextScanTime).add(1, 'm').diff(moment(firstScanTime)).valueOf() : null
         })
     }
 
     //<input type="checkbox" id="runScanNow" value={scanImmediate} onInput={e => setScanImmediate(e.target.checked)} />
 
-    console.log(moment.now().valueOf());
+    const handleIntervalChange = (event) => {
+        setRepeatType(event.target.value);
+      };
 
     return (
         <div className="DiscoveryPage">
@@ -86,13 +108,26 @@ function DiscoveryPage({socket}){
             <input id="rangeEnd" value={endAddress} onInput={e => setEndAddress(e.target.value)} /><br/>
 
             <br/><h2>Monitoring Credentials</h2>
-            <h3>SNMP</h3>
-            <label htmlFor="snmpCommunity">SNMP Community:</label>
-            <input type="number" id="snmpCommunity" value={snmpCommunity} onInput={e => setSNMPCommunity(e.target.value)} /><br/>
-            <h3>WMI</h3>
-            <label htmlFor="wmiUsername">WMI:</label>
-            <input type="number" id="wmiUsername" value={wmi} onInput={e => setWMI(e.target.value)} /><br/>
-
+            <FormGroup>
+                <h3>SNMP</h3>
+                <InputLabel id="snmpSelect-label">SNMP Credentials</InputLabel>
+                <Select labelId="snmpSelect-Label" id="snmpSelect" value={repeatType} label="Interval" onChange={e => setSNMPCommunity(e.target.value)}>
+                    {
+                        snmpCredentials.map((cred, idx) => 
+                            <MenuItem key={idx} value={idx}>{cred[1]}</MenuItem>
+                        )
+                    }
+                </Select>
+                <h3>WMI</h3>
+                <InputLabel id="wmiSelect-label">WMI Credentials</InputLabel>
+                <Select labelId="wmiSelect-Label" id="wmiSelect" value={repeatType} label="Interval" onChange={e => setWMI(e.target.value)}>
+                    {
+                        wmiCredentials.map((cred, idx) => 
+                            <MenuItem key={idx} value={idx}>{cred[1]}</MenuItem>
+                        )
+                    }
+                </Select>
+            </FormGroup>
             <br/><h2>Monitoring Settings</h2>
             <label htmlFor="dName">Discovery Name:</label>
             <input id="dName" value={discoveryName} onInput={e => setDiscoveryName(e.target.value)} /><br/>
@@ -110,22 +145,20 @@ function DiscoveryPage({socket}){
             <input type="number" id="hopCount" value={hopCount} onInput={e => setHopCount(e.target.value)} /><br/>
             <label htmlFor="discoveryTimeout">Discovery Timeout (minutes):</label>
             <input type="number" id="discoveryTimeout" value={discoveryTimeout} onInput={e => setDiscoveryTimeout(e.target.value)} /><br/>
-            <a>Discovery Time</a>
-            <label htmlFor="runScanNow">Run scan now?</label><br/>
-            <DatePicker selected={firstScanTime} onChange={(date) => setFirstScanTime(date)} showTimeSelect dateFormat="MMMM d, yyyy h:mm aa" />
-            <label htmlFor="repeatingScan">Repeating Scan?</label><br/>
-            <input type="checkbox" id="repeatingScan" value={discoveryIsRepeating} onInput={e => setDiscoveryIsRepeating(e.target.checked)} />
-            {discoveryIsRepeating == true &&
-            <nav>
-                <a>Next Discovery Time</a>
-                <DatePicker
-                    selected={nextScanTime}
-                    onChange={(date) => setNextScanTime(date)}
-                    showTimeSelect
-                    dateFormat="MMMM d, yyyy h:mm aa"
-                />
-            </nav>
-            }
+            <br/><h2>Discovery Interval</h2>
+            <FormGroup>
+                <FormControlLabel control={<Checkbox label="RunScanNow" checked={immediateScan} onChange={(event) => { setImmediateScan(event.target.checked) }} />} label="Run Scan Now" />
+                { immediateScan == false &&
+                    <DatePicker selected={firstScanTime} onChange={(date) => setFirstScanTime(date)} showTimeSelect dateFormat="MMMM d, yyyy h:mm aa" />
+                }
+                <InputLabel id="intervalSelect-label">Discovery Interval</InputLabel>
+                <Select labelId="intervalSelect-label" id="intervalSelect" value={repeatType} label="Interval" onChange={handleIntervalChange}>
+                    <MenuItem value={0}>Once</MenuItem>
+                    <MenuItem value={1}>Hourly</MenuItem>
+                    <MenuItem value={2}>Daily</MenuItem>
+                    <MenuItem value={3}>Weekly</MenuItem>
+                </Select>
+            </FormGroup>
             <br/>
             <br/>
             <button onClick={RegisterScan}>Register Scan</button>
