@@ -17,6 +17,7 @@ from datetime import datetime
 from aiorun import run
 from getmac import get_mac_address
 import time
+from collections import namedtuple
 
 localProbeID = 1
 hostProbe = NULL
@@ -138,28 +139,39 @@ async def RequestScanLogs(sid):
 def current_milli_time():
     return round(time.time() * 1000)
 
+def create_record(obj, fields):
+    ''' given obj from db returns named tuple with fields mapped to values '''
+    Record = namedtuple("Record", fields)
+    mappings = dict(zip(fields, obj))
+    return Record(**mappings)
+
+def fetchAllFromDB(action):
+    cursor = dbConn.cursor()
+    cursor.execute(action)
+    record = cursor.fetchall()
+    column_names = [desc[0] for desc in cursor.description]
+    result = []
+    for row in record:
+        result.append(create_record(row, column_names))
+    return result
+
 # Goes through every registered discovery job and tries to start ones
 # whose time to start has passed and isn't an inactive job.
 def TryStartDiscoveryJob():
     print("Trying to start a discovery job.")
-    cursor = dbConn.cursor()
-    cursor.execute("SELECT * FROM public.\"scanParameters\" WHERE \"nextScanTime\" < {} AND \"nextScanTime\" != 0".format(current_milli_time()))
-    record = cursor.fetchall()
+    record = fetchAllFromDB( "SELECT * FROM public.\"scanParameters\" WHERE \"nextScanTime\" < {} AND \"nextScanTime\" != 0".format(current_milli_time()) )
     for x in range(len(record)):
-        print(record[x])
-        if record[x][12] not in probes:
+        if record[x].probeID not in probes:
             print("Probe", record[x][12], "is not currently awake, or does not exist.")
             continue
+        #record[x].ipStartRange = tuple(record[x].ipStartRange)
+        #record[x].ipEndRange = tuple(record[x].ipEndRange)
+        #record[x].subnet = tuple(record[x].subnet)
+        #record[x].snmpCredentials = tuple(record[x].snmpCredentials)
+        #record[x].wmiCredentials = tuple(record[x].wmiCredentials)
         loop = asyncio.get_event_loop()
-        loop.create_task(sio.emit('Probe_RunDiscoverScan', {record[x]}, probes[record[x][12]]['sid']))
-    #print("NOW: ", datetime.now().strftime('%Y-%m-%d %H:%M:%S.%f'))
-    #for x in range(len(registeredScans)):
-    #    s = registeredScans[x]['nextDiscoveryTime'] / 1000.0
-    #    print("ITEM TIME: ", datetime.fromtimestamp(s).strftime('%Y-%m-%d %H:%M:%S.%f'))
-    #    itemTime = datetime.fromtimestamp(s)
-    #    if itemTime > datetime.now():
-    #        continue
-    #    if registeredScans[x]['probeID'] in probes:
+        loop.create_task(sio.emit('Probe_RunDiscoverScan', {record[x]}, probes[record[x].probeID]['sid']))
+
     #        print("Discovery Job", registeredScans[x]['discoveryName'], "starting...")
     #        loop = asyncio.get_event_loop()
     #        loop.create_task(sio.emit('Probe_RunDiscoverScan', registeredScans[x], probes[registeredScans[x]['probeID']]['sid']))
