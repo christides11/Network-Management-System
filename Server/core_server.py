@@ -17,7 +17,7 @@ from datetime import datetime
 from aiorun import run
 from getmac import get_mac_address
 
-runner = NULL
+localProbeID = 1
 hostProbe = NULL
 sio = socketio.AsyncServer(cors_allowed_origins='*')
 app = web.Application()
@@ -138,6 +138,7 @@ def disconnect(sid):
 ### --- INITIALIZATION --- ###
 
 def Initialize():
+    global localProbeID
     cursor = dbConn.cursor()
     # Create default local network.
     cursor.execute("SELECT * FROM public.network")
@@ -157,10 +158,12 @@ def Initialize():
     record = cursor.fetchall()
     for item in record:
         probes[int(item[0])] = { "nickname": item[1], "ip": item[3], "mac": item[4], "network": item[6], "sid": -1 }
-        print(probes[int(item[0])])
+        # Find local probe ID.
+        if item[4] == str(get_mac_address(hostname="localhost")):
+            localProbeID = int(item[0])
 
 async def main(shouldHostProbe, serverIP, serverPort):
-    global hostProbe, dbConn, runner
+    global hostProbe, dbConn, localProbeID
     dbConn = psycopg2.connect(dbname=dbLogin["DB_NAME"], user=dbLogin["DB_USER"], password=dbLogin["DB_PASS"], host=dbLogin["DB_HOST"])
     cursor = dbConn.cursor()
     cursor.execute("select version()")
@@ -168,8 +171,7 @@ async def main(shouldHostProbe, serverIP, serverPort):
     print("DB Connection established to: ", data)
     Initialize()
     if shouldHostProbe == True:
-        localProbeID = "9"
-        hostProbe = subprocess.Popen(['python', '../Probe/ProbeMain.py', "http://{}:{}".format(serverIP, serverPort), localProbeID])
+        hostProbe = subprocess.Popen(['python', '../Probe/ProbeMain.py', "http://{}:{}".format(serverIP, serverPort), str(localProbeID)])
     runner = web.AppRunner(app)
     await runner.setup()
     site = web.TCPSite(runner, serverIP, serverPort)
