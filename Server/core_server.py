@@ -19,16 +19,17 @@ from getmac import get_mac_address
 
 localProbeID = 1
 hostProbe = NULL
-sio = socketio.AsyncServer(cors_allowed_origins='*')
-app = web.Application()
-sio.attach(app)
+dbConn = NULL
 
 f = open('env.json')
 dbLogin = json.load(f)
 f.close()
-probes = {}
-dbConn = NULL
 
+sio = socketio.AsyncServer(cors_allowed_origins='*')
+app = web.Application()
+sio.attach(app)
+
+probes = {}
 currentSessions = []
 # TEMPORARY DATA.
 # These should be in the database
@@ -39,7 +40,8 @@ scanResults = []
 async def connect(sid, environ):
     print("connect ", sid)
 
-# Connects the probe SID to the probe it's suppose to represent.
+# Probe python script request the server to link it's socket.io connect
+# to the probe it's suppose to represent in the database.
 @sio.event
 async def LinkProbe(sid, probeID):
     if probeID not in probes:
@@ -137,6 +139,7 @@ def disconnect(sid):
 
 ### --- INITIALIZATION --- ###
 
+# Grabs various data from the database.
 def Initialize():
     global localProbeID
     cursor = dbConn.cursor()
