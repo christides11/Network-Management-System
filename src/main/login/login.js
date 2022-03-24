@@ -12,10 +12,10 @@ function LoginPage({socket, sessionID, setSessionID}){
         socket.emit('RequestLogin', {"username": username, "password": password});
     }
 
-    function ReceiveLoginResult(sessionID){
-        console.log(sessionID);
-        if(sessionID == null) return;
-        setSessionID(sessionID);
+    function ReceiveLoginResult(data){
+        console.log(data.sessionID);
+        if(data.sessionID == 0) return;
+        setSessionID(data.sessionID);
         navigate("/summary");
     }
     
@@ -31,7 +31,7 @@ function LoginPage({socket, sessionID, setSessionID}){
             <nav>
                 <h1>Login Page</h1>
                 <input value={username} onInput={e => setUsername(e.target.value)} />
-                <input value={password} onInput={e => setPassword(e.target.value)} />
+                <input type="password" value={password} onInput={e => setPassword(e.target.value)} />
                 <button onClick={TryLogin}>Login</button>
             </nav>
         </div>
