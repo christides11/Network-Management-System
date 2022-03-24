@@ -78,13 +78,13 @@ async def connect():
 @sio.event
 async def Probe_RunDiscoverScan(data):
     print('Probe received discovery job, starting...')
-    match data['scanType']:
-        case 0:
-            print("SCAN TYPE: Address Ranges")
-            result = pingScanner(data["addressRanges"][0][0], data["addressRanges"][0][1])
-            await sio.emit('ReceiveScanResults', {'discoveryName': data['discoveryName'], "resultList": result})
-        case 1:
-            print("SCAN TYPE: Subnets")
+    #match data['scanType']:
+    #    case 0:
+    #        print("SCAN TYPE: Address Ranges")
+    #        result = pingScanner(data["addressRanges"][0][0], data["addressRanges"][0][1])
+    #        await sio.emit('ReceiveScanLogFromProbe', {'discoveryName': data['discoveryName'], "resultList": result})
+    #    case 1:
+    #        print("SCAN TYPE: Subnets")
 
 @sio.event
 async def disconnect():

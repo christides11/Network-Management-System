@@ -16,6 +16,7 @@ import asyncio
 from datetime import datetime
 from aiorun import run
 from getmac import get_mac_address
+import time
 
 localProbeID = 1
 hostProbe = NULL
@@ -31,9 +32,6 @@ sio.attach(app)
 
 probes = {}
 currentSessions = []
-# TEMPORARY DATA.
-# These should be in the database
-registeredScans = []
 
 @sio.event
 async def connect(sid, environ):
@@ -124,7 +122,7 @@ async def RegisterDiscoveryScan(sid, data):
 
 # Receive scan results from a probe.
 @sio.event
-def ReceiveScanResults(sid, data):
+def ReceiveScanLogFromProbe(sid, data):
     print('SERVER:')
     #for x in range(len(data["resultList"])):
     #    print(data["resultList"][x])
@@ -137,12 +135,23 @@ async def RequestScanLogs(sid):
     record = cursor.fetchall()
     await sio.emit('ReceiveScanLogs', record)
 
+def current_milli_time():
+    return round(time.time() * 1000)
+
 # Goes through every registered discovery job and tries to start ones
-# whose time to start has passed.
+# whose time to start has passed and isn't an inactive job.
 def TryStartDiscoveryJob():
     print("Trying to start a discovery job.")
-    #cursor = dbConn.cursor()
-    #cursor.execute("SELECT * FROM public.\"scanParameters\"")
+    cursor = dbConn.cursor()
+    cursor.execute("SELECT * FROM public.\"scanParameters\" WHERE \"nextScanTime\" < {} AND \"nextScanTime\" != 0".format(current_milli_time()))
+    record = cursor.fetchall()
+    for x in range(len(record)):
+        print(record[x])
+        if record[x][12] not in probes:
+            print("Probe", record[x][12], "is not currently awake, or does not exist.")
+            continue
+        loop = asyncio.get_event_loop()
+        loop.create_task(sio.emit('Probe_RunDiscoverScan', {record[x]}, probes[record[x][12]]['sid']))
     #print("NOW: ", datetime.now().strftime('%Y-%m-%d %H:%M:%S.%f'))
     #for x in range(len(registeredScans)):
     #    s = registeredScans[x]['nextDiscoveryTime'] / 1000.0
@@ -242,7 +251,7 @@ async def main(shouldHostProbe, serverIP, serverPort):
     site = web.TCPSite(runner, serverIP, serverPort)
     await site.start()
     while True:
-        await asyncio.sleep(60)  # sleep for 1 minute.
+        await asyncio.sleep(5)  # sleep for 1 minute.
         TryStartDiscoveryJob()
     await runner.shutdown()
 
