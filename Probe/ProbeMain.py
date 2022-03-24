@@ -15,7 +15,7 @@ from getmac import get_mac_address
 sio = socketio.AsyncClient()
 socket.setdefaulttimeout(0.25)
 
-probeID = "12345"
+probeID = 9
 
 def singlePing(job_q, results_q):
     DEVNULL = open(os.devnull,'w')
@@ -99,6 +99,5 @@ if __name__ == '__main__':
     if len(sys.argv) > 1:
         serverIP = str(sys.argv[1])
     if len(sys.argv) > 2:
-        probeID = str(sys.argv[2])
+        probeID = int(sys.argv[2])
     run(probeMain(serverIP))
-    #asyncio.run(probeMain(serverIP))

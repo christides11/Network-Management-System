@@ -17,6 +17,7 @@ from datetime import datetime
 from aiorun import run
 from getmac import get_mac_address
 
+runner = NULL
 hostProbe = NULL
 sio = socketio.AsyncServer(cors_allowed_origins='*')
 app = web.Application()
@@ -144,41 +145,39 @@ def Initialize():
     if len(record) == 0:
         cursor.execute("INSERT INTO public.network(name) VALUES ('default network')")
     # Create local probe device.
-    cursor.execute("SELECT * FROM public.device WHERE 'macAddress'='{}'"
+    cursor.execute("SELECT * FROM public.device WHERE \"macAddress\"=\'{}\'"
         .format(str(get_mac_address(hostname="localhost"))))
     record = cursor.fetchall()
-    print(record)
     if len(record) == 0:
-        print("AAAA")
-        cursor.execute('INSERT INTO public.device("name", "dateAdded", "ipAddress", "macAddress", "networkID") VALUES (\'{}\', \'{}\', \'{}\', \'{}\', 1)'.format('local probe', str(datetime.now()), 'localhost', str(get_mac_address(hostname="localhost"))) )    
+        cursor.execute('INSERT INTO public.device("name", "dateAdded", "ipAddress", "macAddress", "networkID") VALUES (\'{}\', \'{}\', \'{}\', \'{}\', 1)'
+            .format('local probe', str(datetime.now()), 'localhost', str(get_mac_address(hostname="localhost"))) )    
     dbConn.commit()
+    # Get list of probes.
+    cursor.execute("SELECT * FROM public.device WHERE \"parent\" IS NULL")
+    record = cursor.fetchall()
+    for item in record:
+        probes[int(item[0])] = { "nickname": item[1], "ip": item[3], "mac": item[4], "network": item[6], "sid": -1 }
+        print(probes[int(item[0])])
 
 async def main(shouldHostProbe, serverIP, serverPort):
-    global hostProbe, dbConn
+    global hostProbe, dbConn, runner
     dbConn = psycopg2.connect(dbname=dbLogin["DB_NAME"], user=dbLogin["DB_USER"], password=dbLogin["DB_PASS"], host=dbLogin["DB_HOST"])
     cursor = dbConn.cursor()
     cursor.execute("select version()")
     data = cursor.fetchone()
     print("DB Connection established to: ", data)
-    if shouldHostProbe == True:
-        localProbeID = "12345"
-        hostProbe = subprocess.Popen(['python', '../Probe/ProbeMain.py', "http://{}:{}".format(serverIP, serverPort), localProbeID])
-        probes[localProbeID] = { "nickname": "Local Probe", "ip": "localhost", "mac": "dummy", "sid": -1 }
     Initialize()
+    if shouldHostProbe == True:
+        localProbeID = "9"
+        hostProbe = subprocess.Popen(['python', '../Probe/ProbeMain.py', "http://{}:{}".format(serverIP, serverPort), localProbeID])
     runner = web.AppRunner(app)
     await runner.setup()
     site = web.TCPSite(runner, serverIP, serverPort)
     await site.start()
-    try:
-        while True:
-            await asyncio.sleep(20)  # sleep for 1 minute.
-            TryStartDiscoveryJob()
-    except KeyboardInterrupt:
-        print("Cleanup...")
-        pass
-    finally:
-        await runner.shutdown()
-    dbConn.close()
+    while True:
+        await asyncio.sleep(20)  # sleep for 1 minute.
+        TryStartDiscoveryJob()
+    await runner.shutdown()
 
 # example of arguments.
 # core_server.py HOST_PROBE?:boolean SERVER_IP?:string SERVER_PORT?:string
@@ -194,3 +193,4 @@ if __name__ == '__main__':
     if len(sys.argv) > 3:
         serverPort = int(sys.argv[3])
     run(main(shouldHostProbe, serverIP, serverPort))
+    dbConn.close()
