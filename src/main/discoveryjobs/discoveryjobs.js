@@ -12,17 +12,19 @@ function DiscoveryJobsPage({socket}){
       }, []);
 
     useEffect(() => {
-        socket.on("ReceiveRegisteredDiscoveryScans", receiveDiscoveryJobs)
+        socket.on("ReceiveDiscoveryScanList", receiveDiscoveryJobs)
 
         return () => {
-            socket.off("ReceiveRegisteredDiscoveryScans", receiveDiscoveryJobs)
+            socket.off("ReceiveDiscoveryScanList", receiveDiscoveryJobs)
         }
     }, [socket]);
 
     function RequestScanList(){
-        socket.emit('RequestRegisteredDiscoveryScans');
+        socket.emit('RequestDiscoveryScanList');
     }
 
+    return (<div className="DiscoveryJobsPage"><h1>Discovery Jobs Page</h1><button onClick={RequestScanList}>Request Scan List</button></div>);
+    /*
     return (
         <div className="DiscoveryJobsPage">
             <h1>Discovery Jobs Page</h1>
@@ -37,7 +39,7 @@ function DiscoveryJobsPage({socket}){
                 </ul>
             }
         </div>
-    );
+    );*/
 }
 
 export default DiscoveryJobsPage;

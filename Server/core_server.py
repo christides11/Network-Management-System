@@ -34,7 +34,6 @@ currentSessions = []
 # TEMPORARY DATA.
 # These should be in the database
 registeredScans = []
-scanResults = []
 
 @sio.event
 async def connect(sid, environ):
@@ -84,27 +83,35 @@ def VerifySession(sessionID):
 
 ### --- DISCOVERY SCANNING --- ###
 
-# Register a discovery scan to the list of scans.
+# Sends a list of all discovery scans currently registered in the database.
+@sio.event
+async def RequestDiscoveryScanList(sid):
+    cursor = dbConn.cursor()
+    cursor.execute("SELECT * FROM public.\"scanParameters\"")
+    record = cursor.fetchall()
+    await sio.emit('ReceiveDiscoveryScanList', record, sid)
+
+# Add a discovery scan to the database.
 @sio.event
 async def RegisterDiscoveryScan(sid, data):
     print("Registering scan {} for probe {}. Next scan is at {}.".format(data['discoveryName'], data['probeID'], data['nextDiscoveryTime']))
     #registeredScans.append(data)
     await sio.emit('Frontend_RegisterDiscoveryScanResult', {'result': True})
 
-@sio.event
-async def RequestRegisteredDiscoveryScans(sid):
-    await sio.emit('ReceiveRegisteredDiscoveryScans', registeredScans, sid)
-
+# Receive scan results from a probe.
 @sio.event
 def ReceiveScanResults(sid, data):
     print('SERVER:')
-    for x in range(len(data["resultList"])):
-        print(data["resultList"][x])
-    scanResults.append(data)
+    #for x in range(len(data["resultList"])):
+    #    print(data["resultList"][x])
+    #scanResults.append(data)
 
 @sio.event
 async def RequestScanLogs(sid):
-    await sio.emit('ReceiveScanLogs', scanResults)
+    cursor = dbConn.cursor()
+    cursor.execute("SELECT * FROM public.\"Scan_Results\"")
+    record = cursor.fetchall()
+    await sio.emit('ReceiveScanLogs', record)
 
 # Goes through every registered discovery job and tries to start ones
 # whose time to start has passed.
@@ -180,7 +187,7 @@ async def main(shouldHostProbe, serverIP, serverPort):
     site = web.TCPSite(runner, serverIP, serverPort)
     await site.start()
     while True:
-        await asyncio.sleep(20)  # sleep for 1 minute.
+        await asyncio.sleep(60)  # sleep for 1 minute.
         TryStartDiscoveryJob()
     await runner.shutdown()
 
