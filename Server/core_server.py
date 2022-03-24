@@ -112,7 +112,6 @@ async def RegisterDiscoveryScan(sid, data):
         st = 'INSERT INTO public."scanParameters" VALUES (1, {}, \'{}\', {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, ARRAY {}, ARRAY {}, ARRAY {}, ARRAY {}, ARRAY {})'.format(data['network'], data['discoveryName'], data['icmpRespondersOnly'], data['snmpTimeout'], data['scanTimeout'], data['snmpRetries'], data['wmiRetries'], 
             data['hopCount'], data['discoveryTimeout'], data['nextDiscoveryTime'], data['discoveryInterval'], data['probeID'], data['scanType'], data['ipStartRanges'],
             data['ipEndRanges'], data['subnets'], data['snmpCredentials'], data['wmiCredentials'])
-        print(st)
         cursor.execute(st)
         dbConn.commit()
         result = True

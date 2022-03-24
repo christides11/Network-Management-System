@@ -98,7 +98,7 @@ function DiscoveryPage({socket}){
                 "hopCount": hopCount,
                 "discoveryTimeout": discoveryTimeout,
                 "nextDiscoveryTime": immediateScan ? moment().toDate().valueOf() : moment(firstScanTime).toDate().valueOf(),
-                "discoveryInterval": moment(firstScanTime).add(timeSheet[repeatType]).toDate().valueOf()
+                "discoveryInterval": timeSheet[repeatType].valueOf()
         })
     }
 
