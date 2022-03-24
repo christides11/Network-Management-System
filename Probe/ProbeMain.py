@@ -9,6 +9,7 @@ import multiprocessing
 import subprocess
 import os
 from datetime import datetime
+from aiorun import run
 
 sio = socketio.AsyncClient()
 socket.setdefaulttimeout(0.25)
@@ -98,4 +99,5 @@ if __name__ == '__main__':
         serverIP = str(sys.argv[1])
     if len(sys.argv) > 2:
         probeID = str(sys.argv[2])
-    asyncio.run(probeMain(serverIP))
+    run(probeMain(serverIP))
+    #asyncio.run(probeMain(serverIP))

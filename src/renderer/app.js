@@ -10,14 +10,12 @@ import Alerts from '../main/alerts/alerts';
 import EventLog from '../main/eventlog/eventLog';
 import Navbar from '../components/navbar/navbar';
 import Home from '../main/home/home';
-import { socket, SocketContext } from '../api/socket';
+import { socket } from '../api/socket';
 import './app.css';
 import DiscoveryJobsPage from '../main/discoveryjobs/discoveryjobs';
 import DiscoveryLog from '../main/discoverylog/discoverylog';
 
 export default function App(){
-
-    const [socket, setSocket] = useState(null);
 
     useEffect(() => {
         console.log("a");
@@ -31,9 +29,9 @@ export default function App(){
         <Router>
             <Navbar />
             <Routes>
-                <Route path="/" element={<LoginPage socket={socket} setSocket={setSocket} />} />
+                <Route path="/" element={<LoginPage socket={socket} />} />
                 <Route path='/home' exact element={<Home />} />
-                <Route path="/summary" element={<SummaryPage socket={socket} setSocket={setSocket} />} />
+                <Route path="/summary" element={<SummaryPage socket={socket} />} />
                 <Route path="/device" element={<DevicePage />} />
                 <Route path="/devices" element={<DevicesPage />} />
                 <Route path="/discovery" element={<DiscoveryPage socket={socket} />} />

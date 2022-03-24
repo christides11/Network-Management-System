@@ -14,6 +14,7 @@ sys.path.append('../Probe/')
 import subprocess
 import asyncio
 from datetime import datetime
+from aiorun import run
 
 hostProbe = NULL
 sio = socketio.AsyncServer(cors_allowed_origins='*')
@@ -50,17 +51,28 @@ async def LinkProbe(sid, probeID):
 # Client tries to login with the given credentials. 
 # If successful, a sessionID is returned.
 @sio.event
-async def RequestLogin(sid, username, password):
-    print("Trying to login with given credentials.")
+async def RequestLogin(sid, data):
+    print("Trying to login with given credentials. {}".format(data["username"]))
     sessionID = NULL
+    cursor = dbConn.cursor()
+    cursor.execute("SELECT username, password FROM public.user WHERE username = '{}' AND password = '{}'".format(data["username"], data["password"]))
+    record = cursor.fetchall()
+    if len(record) == 1:
+        sessionID = data["username"]
+        currentSessions.append(sessionID)
+    print(sessionID)
     await sio.emit('ReceiveLoginResult', {'sessionID': sessionID}, sid)
 
 # Client tries to register with given credentials.
 # If successful, returns true.
 @sio.event
-async def RequestRegistration(sid, username, password):
+async def RequestRegistration(sid, data):
     print("Trying to register user.")
-    await sio.emit('ReceiveRegistrationResult', {'result': False}, sid)
+    cursor = dbConn.cursor()
+    cursor.execute("SELECT username, password FROM user WHERE username = '{}' AND password = '{}'".format(data["username"], data["password"]))
+    record = cursor.fetchall()
+    print("Result ", record)
+    #await sio.emit('ReceiveRegistrationResult', {'result': False}, sid)
 
 # Verifies if the given sessionID is valid.
 def VerifySession(sessionID):
@@ -94,7 +106,7 @@ async def RequestScanLogs(sid):
 # whose time to start has passed.
 def TryStartDiscoveryJob():
     print("Trying to start a discovery job.")
-    print("NOW: ", datetime.now().strftime('%Y-%m-%d %H:%M:%S.%f'))
+    #print("NOW: ", datetime.now().strftime('%Y-%m-%d %H:%M:%S.%f'))
     for x in range(len(registeredScans)):
         s = registeredScans[x]['nextDiscoveryTime'] / 1000.0
         print("ITEM TIME: ", datetime.fromtimestamp(s).strftime('%Y-%m-%d %H:%M:%S.%f'))
@@ -124,7 +136,7 @@ def disconnect(sid):
 ### --- INITIALIZATION --- ###
 
 async def main(shouldHostProbe, serverIP, serverPort):
-    global hostProbe
+    global hostProbe, dbConn
     dbConn = psycopg2.connect(dbname=dbLogin["DB_NAME"], user=dbLogin["DB_USER"], password=dbLogin["DB_PASS"], host=dbLogin["DB_HOST"])
     cursor = dbConn.cursor()
     cursor.execute("select version()")
@@ -138,9 +150,15 @@ async def main(shouldHostProbe, serverIP, serverPort):
     await runner.setup()
     site = web.TCPSite(runner, serverIP, serverPort)
     await site.start()
-    while True:
-        await asyncio.sleep(20)  # sleep for 1 minute.
-        TryStartDiscoveryJob()
+    try:
+        while True:
+            await asyncio.sleep(20)  # sleep for 1 minute.
+            TryStartDiscoveryJob()
+    except KeyboardInterrupt:
+        print("Cleanup...")
+        pass
+    finally:
+        await runner.shutdown()
     dbConn.close()
 
 # example of arguments.
@@ -156,4 +174,4 @@ if __name__ == '__main__':
         serverIP = str(sys.argv[2])
     if len(sys.argv) > 3:
         serverPort = int(sys.argv[3])
-    asyncio.run(main(shouldHostProbe, serverIP, serverPort))
+    run(main(shouldHostProbe, serverIP, serverPort))
