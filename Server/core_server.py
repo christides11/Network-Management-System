@@ -15,6 +15,7 @@ import subprocess
 import asyncio
 from datetime import datetime
 from aiorun import run
+from getmac import get_mac_address
 
 hostProbe = NULL
 sio = socketio.AsyncServer(cors_allowed_origins='*')
@@ -84,7 +85,7 @@ def VerifySession(sessionID):
 @sio.event
 async def RegisterDiscoveryScan(sid, data):
     print("Registering scan {} for probe {}. Next scan is at {}.".format(data['discoveryName'], data['probeID'], data['nextDiscoveryTime']))
-    registeredScans.append(data)
+    #registeredScans.append(data)
     await sio.emit('Frontend_RegisterDiscoveryScanResult', {'result': True})
 
 @sio.event
@@ -135,6 +136,23 @@ def disconnect(sid):
 
 ### --- INITIALIZATION --- ###
 
+def Initialize():
+    cursor = dbConn.cursor()
+    # Create default local network.
+    cursor.execute("SELECT * FROM public.network")
+    record = cursor.fetchall()
+    if len(record) == 0:
+        cursor.execute("INSERT INTO public.network(name) VALUES ('default network')")
+    # Create local probe device.
+    cursor.execute("SELECT * FROM public.device WHERE 'macAddress'='{}'"
+        .format(str(get_mac_address(hostname="localhost"))))
+    record = cursor.fetchall()
+    print(record)
+    if len(record) == 0:
+        print("AAAA")
+        cursor.execute('INSERT INTO public.device("name", "dateAdded", "ipAddress", "macAddress", "networkID") VALUES (\'{}\', \'{}\', \'{}\', \'{}\', 1)'.format('local probe', str(datetime.now()), 'localhost', str(get_mac_address(hostname="localhost"))) )    
+    dbConn.commit()
+
 async def main(shouldHostProbe, serverIP, serverPort):
     global hostProbe, dbConn
     dbConn = psycopg2.connect(dbname=dbLogin["DB_NAME"], user=dbLogin["DB_USER"], password=dbLogin["DB_PASS"], host=dbLogin["DB_HOST"])
@@ -146,6 +164,7 @@ async def main(shouldHostProbe, serverIP, serverPort):
         localProbeID = "12345"
         hostProbe = subprocess.Popen(['python', '../Probe/ProbeMain.py', "http://{}:{}".format(serverIP, serverPort), localProbeID])
         probes[localProbeID] = { "nickname": "Local Probe", "ip": "localhost", "mac": "dummy", "sid": -1 }
+    Initialize()
     runner = web.AppRunner(app)
     await runner.setup()
     site = web.TCPSite(runner, serverIP, serverPort)

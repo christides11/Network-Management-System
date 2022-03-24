@@ -10,6 +10,7 @@ import subprocess
 import os
 from datetime import datetime
 from aiorun import run
+from getmac import get_mac_address
 
 sio = socketio.AsyncClient()
 socket.setdefaulttimeout(0.25)

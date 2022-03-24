@@ -10,9 +10,6 @@ function LoginPage({socket, sessionID, setSessionID}){
 
     function TryLogin(){
         socket.emit('RequestLogin', {"username": username, "password": password});
-        //setSocket(socketio.connect("http://" + serverIP + ":8080"));
-        //setServerIP(serverIP);
-        //navigate("/summary");
     }
 
     function ReceiveLoginResult(sessionID){
