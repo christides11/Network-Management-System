@@ -161,8 +161,6 @@ async def RequestSNMPCredentials(sid):
     cursor = dbConn.cursor()
     cursor.execute("SELECT * FROM public.\"SNMP_Credentials\"")
     record = cursor.fetchall()
-    #if len(record) == 0:
-    #    record = NULL
     await sio.emit('ReceiveSNMPCredentials', record)
 
 @sio.event
@@ -171,6 +169,18 @@ async def RequestWMICredentials(sid):
     cursor.execute("SELECT * FROM public.\"WMI_Credentials\"")
     record = cursor.fetchall()
     await sio.emit('ReceiveWMICredentials', record)
+
+### --- DEVICES --- ###
+
+@sio.event
+async def RequestProbeList(sid):
+    cursor = dbConn.cursor()
+    cursor.execute("SELECT * FROM public.device WHERE \"parent\" IS NULL")
+    record = cursor.fetchall()
+    li = []
+    for x in range(len(record)):
+        li.append({"id": record[x][0], "name": record[x][1], "networkID": record[x][6]})
+    await sio.emit('ReceiveProbeList', li)
 
 
 ### --- INITIALIZATION --- ###

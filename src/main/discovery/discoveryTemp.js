@@ -12,6 +12,8 @@ function DiscoveryPage({socket}){
     // NETWORK SELECTION
     const [startAddress, setStartAddress] = useState("");
     const [endAddress, setEndAddress] = useState("");
+    const [probeList, setProbeList] = useState([]);
+    const [probe, setProbe] = useState(0);
 
     // CREDENTIALS
     const [snmpCredentials, setSNMPCredentials] = useState([]);
@@ -33,6 +35,8 @@ function DiscoveryPage({socket}){
     const [firstScanTime, setFirstScanTime] = useState(new Date());
     const [repeatType, setRepeatType] = useState(0);
 
+    const timeSheet = [moment.duration(0, 'hours'), moment.duration(1, 'hours'), moment.duration(1, 'days'), moment.duration(1, 'week')];
+    
     const handleRegisterScanResult = useCallback((data) => {
         console.log(data.result);
         if(data.result){
@@ -48,21 +52,28 @@ function DiscoveryPage({socket}){
         setWMICredentials(data);
     })
 
+    const receiveProbeList = useCallback((data) => {
+        setProbeList(data);
+    })
+
     useEffect(() => {
-        
     });
 
     useEffect(() => {
         socket.on("Frontend_RegisterDiscoveryScanResult", handleRegisterScanResult)
         socket.on("ReceiveSNMPCredentials", receiveSNMPCredentials)
         socket.on("ReceiveWMICredentials", receiveWMICredentials)
+        socket.on("ReceiveProbeList", receiveProbeList)
+
         socket.emit("RequestSNMPCredentials");
         socket.emit("RequestWMICredentials");
+        socket.emit("RequestProbeList");
 
         return () => {
             socket.off("Frontend_RegisterDiscoveryScanResult", handleRegisterScanResult)
             socket.off("ReceiveSNMPCredentials", receiveSNMPCredentials)
             socket.off("ReceiveWMICredentials", receiveWMICredentials)
+            socket.off("ReceiveProbeList", receiveProbeList)
         }
     }, [socket]);
 
@@ -85,8 +96,8 @@ function DiscoveryPage({socket}){
                 "wmiRetries": wmiRetries,
                 "hopCount": hopCount,
                 "discoveryTimeout": discoveryTimeout,
-                "nextDiscoveryTime": moment(firstScanTime).toDate().valueOf()
-                //"discoveryInterval": discoveryIsRepeating ? moment(nextScanTime).add(1, 'm').diff(moment(firstScanTime)).valueOf() : null
+                "nextDiscoveryTime": immediateScan ? moment.now().toDate().valueOf() : moment(firstScanTime).toDate().valueOf(),
+                "discoveryInterval": moment(firstScanTime).add(timeSheet[repeatType]).toDate().valueOf()
         })
     }
 
@@ -94,13 +105,25 @@ function DiscoveryPage({socket}){
 
     const handleIntervalChange = (event) => {
         setRepeatType(event.target.value);
-      };
+    };
+
 
     return (
         <div className="DiscoveryPage">
             <h1>Discovery Page</h1>
 
             <br/><h2>Network Selection</h2>
+            <FormGroup>
+                <h3>Network</h3>
+                <InputLabel id="probeSelect-label">Probe</InputLabel>
+                <Select labelId="probeSelect-Label" id="probeSelect" value={probe} label="Interval" onChange={e => setProbe(e.target.value)}>
+                    {
+                        probeList.map(({name}, idx) => 
+                            <MenuItem key={idx} value={idx}>{name}</MenuItem>
+                        )
+                    }
+                </Select>
+            </FormGroup>
             <h3>IP Range</h3>
             <label htmlFor="rangeStart">IP Start Address:</label>
             <input id="rangeStart" value={startAddress} onInput={e => setStartAddress(e.target.value)} /><br/>
@@ -111,7 +134,7 @@ function DiscoveryPage({socket}){
             <FormGroup>
                 <h3>SNMP</h3>
                 <InputLabel id="snmpSelect-label">SNMP Credentials</InputLabel>
-                <Select labelId="snmpSelect-Label" id="snmpSelect" value={repeatType} label="Interval" onChange={e => setSNMPCommunity(e.target.value)}>
+                <Select labelId="snmpSelect-Label" id="snmpSelect" value={snmpCommunity} label="Interval" onChange={e => setSNMPCommunity(e.target.value)}>
                     {
                         snmpCredentials.map((cred, idx) => 
                             <MenuItem key={idx} value={idx}>{cred[1]}</MenuItem>
@@ -120,7 +143,7 @@ function DiscoveryPage({socket}){
                 </Select>
                 <h3>WMI</h3>
                 <InputLabel id="wmiSelect-label">WMI Credentials</InputLabel>
-                <Select labelId="wmiSelect-Label" id="wmiSelect" value={repeatType} label="Interval" onChange={e => setWMI(e.target.value)}>
+                <Select labelId="wmiSelect-Label" id="wmiSelect" value={wmi} label="Interval" onChange={e => setWMI(e.target.value)}>
                     {
                         wmiCredentials.map((cred, idx) => 
                             <MenuItem key={idx} value={idx}>{cred[1]}</MenuItem>
