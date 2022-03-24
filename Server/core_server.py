@@ -91,21 +91,36 @@ async def RequestDiscoveryScanList(sid):
     record = cursor.fetchall()
     await sio.emit('ReceiveDiscoveryScanList', record, sid)
 
+def lst2pgarr(alist):
+    return '{' + ','.join(alist) + '}'
+
+def intlst2pgarr(alist):
+    temp = "{"
+    for x in range(len(alist)):
+        temp += str(alist[x])
+        if x < len(alist)-1:
+            temp += ","
+    temp += "}"
+    return temp
+
 # Add a discovery scan to the database.
 @sio.event
 async def RegisterDiscoveryScan(sid, data):
     cursor = dbConn.cursor()
     result = False
     try:
-        cursor.execute('INSERT INTO public."scanParameters" VALUES ({}, \'{}\', {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, \'{}\', \'{}\', \'{}\', {}, {})'
-        .format(data['network'], data['discoveryName'], data['icmpRespondersOnly'], data['snmpTimeout'], data['scanTimeout'], data['snmpRetries'], data['wmiRetries'], 
+        st = 'INSERT INTO public."scanParameters" VALUES (1, {}, \'{}\', {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, ARRAY {}, ARRAY {}, ARRAY {}, ARRAY {}, ARRAY {})'.format(data['network'], data['discoveryName'], data['icmpRespondersOnly'], data['snmpTimeout'], data['scanTimeout'], data['snmpRetries'], data['wmiRetries'], 
             data['hopCount'], data['discoveryTimeout'], data['nextDiscoveryTime'], data['discoveryInterval'], data['probeID'], data['scanType'], data['ipStartRanges'],
-            data['ipEndRanges'], data['subnets'], data['snmpCredentials'], data['wmiCredentials'] ))
-        print("Registering scan {} for probe {}. Next scan is at {}.".format(data['discoveryName'], data['probeID'], data['nextDiscoveryTime']))
+            data['ipEndRanges'], data['subnets'], data['snmpCredentials'], data['wmiCredentials'])
+        print(st)
+        cursor.execute(st)
+        dbConn.commit()
         result = True
-    except:
+    except Exception as e:
         print("Error registering scan {}".format(data['discoveryName']))
+        print(e)
     finally:
+        print("Sending result: ", result)
         await sio.emit('Frontend_RegisterDiscoveryScanResult', {'result': result})
 
 # Receive scan results from a probe.
@@ -127,6 +142,8 @@ async def RequestScanLogs(sid):
 # whose time to start has passed.
 def TryStartDiscoveryJob():
     print("Trying to start a discovery job.")
+    #cursor = dbConn.cursor()
+    #cursor.execute("SELECT * FROM public.\"scanParameters\"")
     #print("NOW: ", datetime.now().strftime('%Y-%m-%d %H:%M:%S.%f'))
     #for x in range(len(registeredScans)):
     #    s = registeredScans[x]['nextDiscoveryTime'] / 1000.0

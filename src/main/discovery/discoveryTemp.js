@@ -81,12 +81,13 @@ function DiscoveryPage({socket}){
         console.log("REGISTER SCAN")
         socket.emit('RegisterDiscoveryScan', 
         {
+                "network": 1,
                 "probeID": 9,
                 "discoveryName": discoveryName, 
                 "scanType": 0, // Address Range(s) or Subnet(s)
                 "ipStartRanges": [startAddress],
                 "ipEndRanges": [endAddress],
-                "subnets": [],
+                "subnets": ["0"],
                 "snmpCredentials": [1],
                 "wmiCredentials": [1],
                 "icmpRespondersOnly": icmpRespondersOnly,
@@ -96,7 +97,7 @@ function DiscoveryPage({socket}){
                 "wmiRetries": wmiRetries,
                 "hopCount": hopCount,
                 "discoveryTimeout": discoveryTimeout,
-                "nextDiscoveryTime": immediateScan ? moment.now().toDate().valueOf() : moment(firstScanTime).toDate().valueOf(),
+                "nextDiscoveryTime": immediateScan ? moment().toDate().valueOf() : moment(firstScanTime).toDate().valueOf(),
                 "discoveryInterval": moment(firstScanTime).add(timeSheet[repeatType]).toDate().valueOf()
         })
     }
