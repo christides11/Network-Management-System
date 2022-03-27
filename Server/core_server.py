@@ -48,6 +48,22 @@ async def LinkProbe(sid, probeID):
     probes[probeID]['sid'] = sid
     print("SERVER: Linked sid {} to probe {}".format(sid, probeID))
 
+
+### --- HELPER FUNCTIONS --- ###
+
+# Execute the given command on the DB and return a list of results. Each result is a dictionary with the keys being
+# the name of the given column.
+def fetchAllFromDB(action):
+    cursor = dbConn.cursor()
+    cursor.execute(action)
+    record = cursor.fetchall()
+    column_names = [desc[0] for desc in cursor.description]
+    result = []
+    for row in record:
+        result.append(create_record(row, column_names))
+    cursor.close()
+    return result
+
 ### --- LOGIN AND REGISTRATION --- ###
 
 # Client tries to login with the given credentials. 
@@ -56,9 +72,7 @@ async def LinkProbe(sid, probeID):
 async def RequestLogin(sid, data):
     print("Trying to login with given credentials. {}".format(data["username"]))
     sessionID = NULL
-    cursor = dbConn.cursor()
-    cursor.execute("SELECT username, password FROM public.user WHERE username = '{}' AND password = '{}'".format(data["username"], data["password"]))
-    record = cursor.fetchall()
+    record = fetchAllFromDB("SELECT username, password FROM public.user WHERE username = '{}' AND password = '{}'".format(data["username"], data["password"]))
     if len(record) == 1:
         sessionID = data["username"]
         currentSessions.append(sessionID)
@@ -70,11 +84,11 @@ async def RequestLogin(sid, data):
 @sio.event
 async def RequestRegistration(sid, data):
     print("Trying to register user.")
-    cursor = dbConn.cursor()
-    cursor.execute("SELECT username, password FROM user WHERE username = '{}' AND password = '{}'".format(data["username"], data["password"]))
-    record = cursor.fetchall()
-    print("Result ", record)
-    #await sio.emit('ReceiveRegistrationResult', {'result': False}, sid)
+    record = fetchAllFromDB("SELECT username, password FROM user WHERE username = '{}'".format(data["username"]))
+    if(len(record) > 0):
+        await sio.emit('ReceiveRegistrationResult', {'result': False}, sid)
+    # TODO: Register user in db.
+    await sio.emit('ReceiveRegistrationResult', {'result': True}, sid)
 
 # Verifies if the given sessionID is valid.
 def VerifySession(sessionID):
@@ -85,9 +99,7 @@ def VerifySession(sessionID):
 # Sends a list of all discovery scans currently registered in the database.
 @sio.event
 async def RequestDiscoveryScanList(sid):
-    cursor = dbConn.cursor()
-    cursor.execute("SELECT * FROM public.\"scanParameters\"")
-    record = cursor.fetchall()
+    record = fetchAllFromDB("SELECT * FROM public.\"scanParameters\"")
     await sio.emit('ReceiveDiscoveryScanList', record, sid)
 
 def lst2pgarr(alist):
@@ -118,6 +130,7 @@ async def RegisterDiscoveryScan(sid, data):
         print("Error registering scan {}".format(data['discoveryName']))
         print(e)
     finally:
+        cursor.close()
         print("Sending result: ", result)
         await sio.emit('Frontend_RegisterDiscoveryScanResult', {'result': result})
 
@@ -131,9 +144,9 @@ def ReceiveScanLogFromProbe(sid, data):
 
 @sio.event
 async def RequestScanLogs(sid):
-    cursor = dbConn.cursor()
-    cursor.execute("SELECT * FROM public.\"Scan_Results\"")
-    record = cursor.fetchall()
+    #cursor = dbConn.cursor()
+    #cursor.execute("SELECT * FROM public.\"Scan_Results\"")
+    record = fetchAllFromDB("SELECT * FROM public.\"Scan_Results\"")
     await sio.emit('ReceiveScanLogs', record)
 
 def current_milli_time():
@@ -146,18 +159,6 @@ def create_record(obj, fields):
         result[str(fields[x])] = obj[x]
     return result
 
-# Execute the given command on the DB and return a list of results. Each result is a dictionary with the keys being
-# the name of the given column.
-def fetchAllFromDB(action):
-    cursor = dbConn.cursor()
-    cursor.execute(action)
-    record = cursor.fetchall()
-    column_names = [desc[0] for desc in cursor.description]
-    result = []
-    for row in record:
-        result.append(create_record(row, column_names))
-    return result
-
 # Goes through every registered discovery job and tries to start ones
 # whose time to start has passed and isn't an inactive job.
 def TryStartDiscoveryJob():
@@ -168,11 +169,6 @@ def TryStartDiscoveryJob():
         if record[x]["probeID"] not in probes:
             print("Probe", record[x][12], "is not currently awake, or does not exist.")
             continue
-        #record[x].ipStartRange = tuple(record[x].ipStartRange)
-        #record[x].ipEndRange = tuple(record[x].ipEndRange)
-        #record[x].subnet = tuple(record[x].subnet)
-        #record[x].snmpCredentials = tuple(record[x].snmpCredentials)
-        #record[x].wmiCredentials = tuple(record[x].wmiCredentials)
         loop = asyncio.get_event_loop()
         loop.create_task(sio.emit('Probe_RunDiscoverScan', record[x], probes[record[x]["probeID"]]['sid']))
 
@@ -251,6 +247,7 @@ def Initialize():
         # Find local probe ID.
         if item[4] == str(get_mac_address(hostname="localhost")):
             localProbeID = int(item[0])
+    cursor.close()
 
 async def main(shouldHostProbe, serverIP, serverPort):
     global hostProbe, dbConn, localProbeID
@@ -269,6 +266,7 @@ async def main(shouldHostProbe, serverIP, serverPort):
     while True:
         await asyncio.sleep(5)  # sleep for 1 minute.
         TryStartDiscoveryJob()
+    cursor.close()
     await runner.shutdown()
 
 # example of arguments.
