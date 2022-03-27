@@ -17,6 +17,7 @@ socket.setdefaulttimeout(0.25)
 
 probeID = 9
 
+# Uses the ping command to find devices on the network.
 def singlePing(job_q, results_q):
     DEVNULL = open(os.devnull,'w')
     while True:
@@ -30,6 +31,7 @@ def singlePing(job_q, results_q):
         except:
             pass
 
+# Finds devices simultaneously using multithreading. Returns the list of IPs found.
 def pingScanner(startAddr, endAddr):
     start = startAddr.split(".")
     end = endAddr.split(".")
@@ -78,13 +80,15 @@ async def connect():
 @sio.event
 async def Probe_RunDiscoverScan(data):
     print('Probe received discovery job, starting...')
-    #match data['scanType']:
-    #    case 0:
-    #        print("SCAN TYPE: Address Ranges")
-    #        result = pingScanner(data["addressRanges"][0][0], data["addressRanges"][0][1])
-    #        await sio.emit('ReceiveScanLogFromProbe', {'discoveryName': data['discoveryName'], "resultList": result})
-    #    case 1:
-    #        print("SCAN TYPE: Subnets")
+    result = []
+    match data['scanType']:
+        case 0:
+            print("SCAN TYPE: Address Ranges")
+            for x in range(len(data["ipStartRange"])):
+                result += pingScanner(data["ipStartRange"][x], data["ipEndRange"][x])
+        case 1:
+            print("SCAN TYPE: Subnets")
+    await sio.emit('ReceiveScanLogFromProbe', {'discoveryID': data['id'], 'devicesFound': result})
 
 @sio.event
 async def disconnect():
