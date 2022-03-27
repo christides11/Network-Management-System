@@ -87,6 +87,7 @@ async def Probe_RunDiscoverScan(data):
             for x in range(len(data["ipStartRange"])):
                 result += pingScanner(data["ipStartRange"][x], data["ipEndRange"][x])
         case 1:
+            #TODO
             print("SCAN TYPE: Subnets")
     await sio.emit('ReceiveScanLogFromProbe', {'discoveryID': data['id'], 'devicesFound': result})
 

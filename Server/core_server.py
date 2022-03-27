@@ -134,13 +134,16 @@ async def RegisterDiscoveryScan(sid, data):
         print("Sending result: ", result)
         await sio.emit('Frontend_RegisterDiscoveryScanResult', {'result': result})
 
-# Receive scan results from a probe.
+# Receive a scan log from a probe then add it to the database.
 @sio.event
 def ReceiveScanLogFromProbe(sid, data):
     print('SERVER:')
-    #for x in range(len(data["resultList"])):
-    #    print(data["resultList"][x])
-    #scanResults.append(data)
+    for x in range(len(data["devicesFound"])):
+        print(data["devicesFound"][x])
+    cursor = dbConn.cursor()
+    cursor.execute('INSERT INTO public.\"Scan_Results\" VALUES ({}, ARRAY {})'.format(data["discoveryID"], data["devicesFound"]))
+    dbConn.commit()
+    cursor.close()
 
 @sio.event
 async def RequestScanLogs(sid):
@@ -208,6 +211,7 @@ async def RequestWMICredentials(sid):
 
 ### --- DEVICES --- ###
 
+# returns a list of devices that are probes.
 @sio.event
 async def RequestProbeList(sid):
     cursor = dbConn.cursor()
@@ -216,7 +220,20 @@ async def RequestProbeList(sid):
     li = []
     for x in range(len(record)):
         li.append({"id": record[x][0], "name": record[x][1], "networkID": record[x][6]})
+    cursor.close()
     await sio.emit('ReceiveProbeList', li)
+
+# returns a list of all devices attached to the given probe.
+@sio.event
+async def RequestDeviceListFromProbe(sid, probeID):
+    result = fetchAllFromDB("SELECT * FROM public.device WHERE \"parent\" = {}".format(probeID))
+    await sio.emit('ReceiveDeviceList', result)
+
+# returns a list of all devices in the database.
+@sio.event
+async def RequestDeviceList(sid):
+    result = fetchAllFromDB("SELECT * FROM public.device")
+    await sio.emit('ReceiveDeviceList', result)
 
 
 ### --- INITIALIZATION --- ###
