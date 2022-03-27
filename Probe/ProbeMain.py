@@ -27,7 +27,7 @@ def singlePing(job_q, results_q):
         try:
             subprocess.check_call(['ping','-n','1','-w','250',ip],
                                     stdout=DEVNULL)
-            results_q.put(ip)
+            results_q.put(str(ip))
         except:
             pass
 

@@ -51,6 +51,13 @@ async def LinkProbe(sid, probeID):
 
 ### --- HELPER FUNCTIONS --- ###
 
+def create_record(obj, fields):
+    ''' given obj from db returns named tuple with fields mapped to values '''
+    result = {}
+    for x in range(len(fields)):
+        result[str(fields[x])] = obj[x]
+    return result
+
 # Execute the given command on the DB and return a list of results. Each result is a dictionary with the keys being
 # the name of the given column.
 def fetchAllFromDB(action):
@@ -63,6 +70,18 @@ def fetchAllFromDB(action):
         result.append(create_record(row, column_names))
     cursor.close()
     return result
+
+def lst2pgarr(alist):
+    return '{' + ','.join(alist) + '}'
+
+def intlst2pgarr(alist):
+    temp = "{"
+    for x in range(len(alist)):
+        temp += str(alist[x])
+        if x < len(alist)-1:
+            temp += ","
+    temp += "}"
+    return temp
 
 ### --- LOGIN AND REGISTRATION --- ###
 
@@ -102,18 +121,6 @@ async def RequestDiscoveryScanList(sid):
     record = fetchAllFromDB("SELECT * FROM public.\"scanParameters\"")
     await sio.emit('ReceiveDiscoveryScanList', record, sid)
 
-def lst2pgarr(alist):
-    return '{' + ','.join(alist) + '}'
-
-def intlst2pgarr(alist):
-    temp = "{"
-    for x in range(len(alist)):
-        temp += str(alist[x])
-        if x < len(alist)-1:
-            temp += ","
-    temp += "}"
-    return temp
-
 # Add a discovery scan to the database.
 @sio.event
 async def RegisterDiscoveryScan(sid, data):
@@ -141,7 +148,7 @@ def ReceiveScanLogFromProbe(sid, data):
     for x in range(len(data["devicesFound"])):
         print(data["devicesFound"][x])
     cursor = dbConn.cursor()
-    cursor.execute('INSERT INTO public.\"Scan_Results\" VALUES ({}, ARRAY {})'.format(data["discoveryID"], data["devicesFound"]))
+    cursor.execute('INSERT INTO public.\"Scan_Results\" VALUES ({}, \'{}\', ARRAY {})'.format(data["discoveryID"], str(datetime.now()), data["devicesFound"]))
     dbConn.commit()
     cursor.close()
 
@@ -152,13 +159,6 @@ async def RequestScanLogs(sid):
 
 def current_milli_time():
     return round(time.time() * 1000)
-
-def create_record(obj, fields):
-    ''' given obj from db returns named tuple with fields mapped to values '''
-    result = {}
-    for x in range(len(fields)):
-        result[str(fields[x])] = obj[x]
-    return result
 
 # Goes through every registered discovery job and tries to start ones
 # whose time to start has passed and isn't an inactive job.
