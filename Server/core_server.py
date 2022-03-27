@@ -141,10 +141,13 @@ def current_milli_time():
 
 def create_record(obj, fields):
     ''' given obj from db returns named tuple with fields mapped to values '''
-    Record = namedtuple("Record", fields)
-    mappings = dict(zip(fields, obj))
-    return Record(**mappings)
+    result = {}
+    for x in range(len(fields)):
+        result[str(fields[x])] = obj[x]
+    return result
 
+# Execute the given command on the DB and return a list of results. Each result is a dictionary with the keys being
+# the name of the given column.
 def fetchAllFromDB(action):
     cursor = dbConn.cursor()
     cursor.execute(action)
@@ -161,7 +164,8 @@ def TryStartDiscoveryJob():
     print("Trying to start a discovery job.")
     record = fetchAllFromDB( "SELECT * FROM public.\"scanParameters\" WHERE \"nextScanTime\" < {} AND \"nextScanTime\" != 0".format(current_milli_time()) )
     for x in range(len(record)):
-        if record[x].probeID not in probes:
+        print(record[x])
+        if record[x]["probeID"] not in probes:
             print("Probe", record[x][12], "is not currently awake, or does not exist.")
             continue
         #record[x].ipStartRange = tuple(record[x].ipStartRange)
@@ -170,7 +174,7 @@ def TryStartDiscoveryJob():
         #record[x].snmpCredentials = tuple(record[x].snmpCredentials)
         #record[x].wmiCredentials = tuple(record[x].wmiCredentials)
         loop = asyncio.get_event_loop()
-        loop.create_task(sio.emit('Probe_RunDiscoverScan', {record[x]}, probes[record[x].probeID]['sid']))
+        loop.create_task(sio.emit('Probe_RunDiscoverScan', record[x], probes[record[x]["probeID"]]['sid']))
 
     #        print("Discovery Job", registeredScans[x]['discoveryName'], "starting...")
     #        loop = asyncio.get_event_loop()
