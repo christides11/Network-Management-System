@@ -144,8 +144,6 @@ def ReceiveScanLogFromProbe(sid, data):
 
 @sio.event
 async def RequestScanLogs(sid):
-    #cursor = dbConn.cursor()
-    #cursor.execute("SELECT * FROM public.\"Scan_Results\"")
     record = fetchAllFromDB("SELECT * FROM public.\"Scan_Results\"")
     await sio.emit('ReceiveScanLogs', record)
 
@@ -171,17 +169,18 @@ def TryStartDiscoveryJob():
             continue
         loop = asyncio.get_event_loop()
         loop.create_task(sio.emit('Probe_RunDiscoverScan', record[x], probes[record[x]["probeID"]]['sid']))
-
-    #        print("Discovery Job", registeredScans[x]['discoveryName'], "starting...")
-    #        loop = asyncio.get_event_loop()
-    #        loop.create_task(sio.emit('Probe_RunDiscoverScan', registeredScans[x], probes[registeredScans[x]['probeID']]['sid']))
-    #        if registeredScans[x]['discoveryInterval'] == NULL:
-    #            #TODO remove scan since it's a one off.
-    #            continue
-    #        registeredScans[x]['nextDiscoveryTime'] += registeredScans[x]['discoveryInterval']
-    #        print("NEXT TIME: ", datetime.fromtimestamp(registeredScans[x]['nextDiscoveryTime'] / 1000.0).strftime('%Y-%m-%d %H:%M:%S.%f'))
-    #    else:
-    #        print("DISCOVERY ERROR: Probe", registeredScans[x]['probeID'], "not found.")
+        print("Discovery Job", record[x]['name'], "starting...")
+        cursor = dbConn.cursor()
+        # One off scan.
+        if record[x]["timeBetweenScans"] == 0:
+            cursor.execute("UPDATE public.\"scanParameters\" SET \"nextScanTime\"=0 WHERE id={}".format(record[x]["id"])) #ignore this value. 1648147018069
+            dbConn.commit()
+            cursor.close()
+            continue
+        # Set the next scan time to current next scan time + timebetweenscans.
+        cursor.execute("UPDATE public.\"scanParameters\" SET \"nextScanTime\"={} WHERE id={}".format(record[x]["nextScanTime"] + record[x]["timeBetweenScans"], record[x]["id"]))
+        dbConn.commit()
+        cursor.close()
 
 
 @sio.event
