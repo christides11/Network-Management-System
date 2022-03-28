@@ -160,6 +160,8 @@ def ReceiveScanLogFromProbe(sid, data):
         print(data["devicesFound"][x])
     # No devices found.
     if len(data["devicesFound"]) == 0:
+        #TODO: find way to insert empty array.
+        print("NO DEVICES FOUND!")
         return
     cursor = dbConn.cursor()
     cursor.execute('INSERT INTO public.\"Scan_Results\" VALUES ({}, \'{}\', ARRAY {})'.format(data["discoveryID"], str(datetime.now()), data["devicesFound"]))

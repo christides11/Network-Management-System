@@ -12,7 +12,10 @@ from datetime import datetime
 from aiorun import run
 from getmac import get_mac_address
 from pysnmp.entity.rfc3413.oneliner import cmdgen
-import wmi_client_wrapper as wmi
+if sys.platform.startswith("win"):
+    import wmi as wmi
+elif sys.platform.startswith("linux"):
+    import wmi_client_wrapper as wmi
 
 sio = socketio.AsyncClient()
 socket.setdefaulttimeout(0.25)
