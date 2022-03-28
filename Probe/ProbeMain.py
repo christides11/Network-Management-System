@@ -12,11 +12,14 @@ from datetime import datetime
 from aiorun import run
 from getmac import get_mac_address
 from pysnmp.entity.rfc3413.oneliner import cmdgen
+import wmi_client_wrapper as wmi
 
 sio = socketio.AsyncClient()
 socket.setdefaulttimeout(0.25)
 
 probeID = 9
+
+SYSNAME = '1.3.6.1.2.1.1.5.0'
 
 # Use a few commands to check if a device is valid to be added to the given scan.
 def isDeviceValid(job_q, scanParams, wmiCreds, snmpCreds, results_q):
@@ -30,8 +33,26 @@ def isDeviceValid(job_q, scanParams, wmiCreds, snmpCreds, results_q):
             subprocess.check_call(['ping','-n','1','-w','250',ip],
                                     stdout=DEVNULL)
             # Try to get sysname via snmp.
-            sysname = '1.3.6.1.2.1.1.5.0'
-            #results_q.put(str(ip))
+            snmpCredID = -1
+            for snmpCred in snmpCreds:
+                auth = cmdgen.CommunityData(snmpCred["communityString"])
+                cmdGen = cmdgen.CommandGenerator()
+                errorIndication, errorStatus, errorIndex, varBinds = cmdGen.getCmd(
+                    auth,
+                    cmdgen.UdpTransportTarget((ip, 161)),
+                    cmdgen.MibVariable(SYSNAME),
+                    lookupMib=False,
+                )
+                if errorIndication:
+                    continue
+                snmpCredID = snmpCred["id"]
+                break
+            # TODO: Wmi credential query
+            wmICredID = -1
+            # No credentials worked & we want to ignore those that only respond to pings.
+            if snmpCredID == -1 and wmICredID == -1 and scanParams['allowICMPResponders'] == False:
+                raise Exception("creds failed")
+            results_q.put(str(ip))
         except:
             # One of the checks failed.
             pass
