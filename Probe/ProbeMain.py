@@ -11,28 +11,33 @@ import os
 from datetime import datetime
 from aiorun import run
 from getmac import get_mac_address
+from pysnmp.entity.rfc3413.oneliner import cmdgen
 
 sio = socketio.AsyncClient()
 socket.setdefaulttimeout(0.25)
 
 probeID = 9
 
-# Uses the ping command to find devices on the network.
-def singlePing(job_q, results_q):
+# Use a few commands to check if a device is valid to be added to the given scan.
+def isDeviceValid(job_q, scanParams, wmiCreds, snmpCreds, results_q):
     DEVNULL = open(os.devnull,'w')
     while True:
         ip = job_q.get()
         if ip is None: break
 
         try:
+            # Ping device.
             subprocess.check_call(['ping','-n','1','-w','250',ip],
                                     stdout=DEVNULL)
-            results_q.put(str(ip))
+            # Try to get sysname via snmp.
+            sysname = '1.3.6.1.2.1.1.5.0'
+            #results_q.put(str(ip))
         except:
+            # One of the checks failed.
             pass
 
 # Finds devices simultaneously using multithreading. Returns the list of IPs found.
-def pingScanner(startAddr, endAddr):
+def ScannerTask(scanParams, startAddr, endAddr, wmiCreds, snmpCreds):
     start = startAddr.split(".")
     end = endAddr.split(".")
     pool_size = 30
@@ -41,7 +46,7 @@ def pingScanner(startAddr, endAddr):
     pool = NULL
     t1 = datetime.now()
 
-    pool = [ multiprocessing.Process(target=singlePing, args=(jobs,results)) 
+    pool = [ multiprocessing.Process(target=isDeviceValid, args=(jobs,scanParams,wmiCreds,snmpCreds,results)) 
             for i in range(pool_size) ]
     
     for s in range(0, len(start)):
@@ -80,16 +85,23 @@ async def connect():
 @sio.event
 async def Probe_RunDiscoverScan(data):
     print('Probe received discovery job, starting...')
+    print(data["wmiCreds"])
+    print(data["snmpCreds"])
     result = []
-    match data['scanType']:
+    match data['params']['scanType']:
         case 0:
             print("SCAN TYPE: Address Ranges")
-            for x in range(len(data["ipStartRange"])):
-                result += pingScanner(data["ipStartRange"][x], data["ipEndRange"][x])
+            for x in range(len(data['params']["ipStartRange"])):
+                result += ScannerTask(data, data['params']["ipStartRange"][x], data['params']["ipEndRange"][x], data['wmiCreds'], data['snmpCreds'])
         case 1:
             #TODO
             print("SCAN TYPE: Subnets")
-    await sio.emit('ReceiveScanLogFromProbe', {'discoveryID': data['id'], 'devicesFound': result})
+    await sio.emit('ReceiveScanLogFromProbe', {'discoveryID': data['params']['id'], 'devicesFound': result})
+
+# Probe tries to ping a given IP address, returning information on the device if successful.
+@sio.event
+async def Probe_TryPingDevice(data):
+    print('...')
 
 @sio.event
 async def disconnect():

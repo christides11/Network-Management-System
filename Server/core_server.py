@@ -71,6 +71,17 @@ def fetchAllFromDB(action):
     cursor.close()
     return result
 
+def fetchOneFromDB(action):
+    cursor = dbConn.cursor()
+    cursor.execute(action)
+    record = cursor.fetchone()
+    column_names = [desc[0] for desc in cursor.description]
+    cursor.close()
+    result = {}
+    for row in record:
+        result = create_record(row, column_names)
+    return result
+
 def lst2pgarr(alist):
     return '{' + ','.join(alist) + '}'
 
@@ -147,6 +158,9 @@ def ReceiveScanLogFromProbe(sid, data):
     print('SERVER:')
     for x in range(len(data["devicesFound"])):
         print(data["devicesFound"][x])
+    # No devices found.
+    if len(data["devicesFound"]) == 0:
+        return
     cursor = dbConn.cursor()
     cursor.execute('INSERT INTO public.\"Scan_Results\" VALUES ({}, \'{}\', ARRAY {})'.format(data["discoveryID"], str(datetime.now()), data["devicesFound"]))
     dbConn.commit()
@@ -166,13 +180,18 @@ def TryStartDiscoveryJob():
     print("Trying to start a discovery job.")
     record = fetchAllFromDB( "SELECT * FROM public.\"scanParameters\" WHERE \"nextScanTime\" < {} AND \"nextScanTime\" != 0".format(current_milli_time()) )
     for x in range(len(record)):
-        print(record[x])
         if record[x]["probeID"] not in probes:
             print("Probe", record[x][12], "is not currently awake, or does not exist.")
             continue
+        # Get all SNMP credentials.
+        snmpCreds = fetchAllFromDB("SELECT * FROM public.\"SNMP_Credentials\" WHERE \"id\" = ANY(\'{}\'::int[])".format(intlst2pgarr(record[x]["snmpCredentials"])))
+        # Get all WMI credentials.
+        wmiCreds = fetchAllFromDB("SELECT * FROM public.\"WMI_Credentials\" WHERE \"id\" = ANY(\'{}\'::int[])".format(intlst2pgarr(record[x]["wmiCredentials"])))
+        # Send command to probe to start the scan with given parameters.
         loop = asyncio.get_event_loop()
-        loop.create_task(sio.emit('Probe_RunDiscoverScan', record[x], probes[record[x]["probeID"]]['sid']))
+        loop.create_task(sio.emit('Probe_RunDiscoverScan', {"params": record[x], "snmpCreds": snmpCreds, "wmiCreds": wmiCreds }, probes[record[x]["probeID"]]['sid']))
         print("Discovery Job", record[x]['name'], "starting...")
+        # Update the next scan time for the scan.
         cursor = dbConn.cursor()
         # One off scan.
         if record[x]["timeBetweenScans"] == 0:
