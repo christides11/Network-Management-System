@@ -138,7 +138,7 @@ async def RegisterDiscoveryScan(sid, data):
     cursor = dbConn.cursor()
     result = False
     try:
-        st = 'INSERT INTO public."scanParameters" VALUES (1, {}, \'{}\', {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, ARRAY {}, ARRAY {}, ARRAY {}, ARRAY {}, ARRAY {})'.format(data['network'], data['discoveryName'], data['icmpRespondersOnly'], data['snmpTimeout'], data['scanTimeout'], data['snmpRetries'], data['wmiRetries'], 
+        st = 'INSERT INTO public."scanParameters" VALUES ({}, \'{}\', {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, ARRAY {}, ARRAY {}, ARRAY {}, ARRAY {}, ARRAY {})'.format(data['network'], data['discoveryName'], data['icmpRespondersOnly'], data['snmpTimeout'], data['scanTimeout'], data['snmpRetries'], data['wmiRetries'], 
             data['hopCount'], data['discoveryTimeout'], data['nextDiscoveryTime'], data['discoveryInterval'], data['probeID'], data['scanType'], data['ipStartRanges'],
             data['ipEndRanges'], data['subnets'], data['snmpCredentials'], data['wmiCredentials'])
         cursor.execute(st)
@@ -164,7 +164,7 @@ def ReceiveScanLogFromProbe(sid, data):
         print("NO DEVICES FOUND!")
         return
     cursor = dbConn.cursor()
-    cursor.execute('INSERT INTO public.\"Scan_Results\" VALUES ({}, \'{}\', ARRAY {})'.format(data["discoveryID"], str(datetime.now()), data["devicesFound"]))
+    cursor.execute('INSERT INTO public.\"Scan_Results\" VALUES ({}, \'{}\', {}, \'{}\')'.format(data["discoveryID"], str(datetime.now()), 5, json.dumps(data["devicesFound"]) ))
     dbConn.commit()
     cursor.close()
 
@@ -179,7 +179,6 @@ def current_milli_time():
 # Goes through every registered discovery job and tries to start ones
 # whose time to start has passed and isn't an inactive job.
 def TryStartDiscoveryJob():
-    print("Trying to start a discovery job.")
     record = fetchAllFromDB( "SELECT * FROM public.\"scanParameters\" WHERE \"nextScanTime\" < {} AND \"nextScanTime\" != 0".format(current_milli_time()) )
     for x in range(len(record)):
         if record[x]["probeID"] not in probes:

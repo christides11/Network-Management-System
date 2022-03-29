@@ -20,8 +20,9 @@ elif sys.platform.startswith("linux"):
 sio = socketio.AsyncClient()
 socket.setdefaulttimeout(0.25)
 
-probeID = 9
+probeID = 1
 
+#SNMP command used for checking if a device can be queried.
 SYSNAME = '1.3.6.1.2.1.1.5.0'
 
 # Use a few commands to check if a device is valid to be added to the given scan.
@@ -94,11 +95,11 @@ def ScannerTask(scanParams, startAddr, endAddr, wmiCreds, snmpCreds):
 
     finalResults = []
     while not results.empty():
-        ip = results.get()
-        finalResults.append(str(ip))
+        deviceResult = results.get()
+        finalResults.append(deviceResult)
     t2 = datetime.now()
     total = t2 - t1
-    print ("Scan completed in: ",total)
+    print ("Scan completed in: ", total)
     return finalResults
 
 @sio.event

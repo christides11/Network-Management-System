@@ -1,5 +1,8 @@
+DROP SCHEMA public CASCADE;
+CREATE SCHEMA public;
+
 CREATE TABLE "user" (
-  "id" SERIAL PRIMARY KEY,
+  "id" SERIAL PRIMARY KEY NOT NULL,
   "username" varchar,
   "password" varchar,
   "dateCreated" timestamp,
@@ -7,16 +10,14 @@ CREATE TABLE "user" (
 );
 
 CREATE TABLE "network" (
-  "id" SERIAL PRIMARY KEY,
+  "id" SERIAL PRIMARY KEY NOT NULL,
   "name" varchar,
-  "numDevices" int,
-  "deviceName" varchar,
   "snmpCredentials" int,
   "wmiCredentials" int
 );
 
 CREATE TABLE "device" (
-  "id" SERIAL PRIMARY KEY,
+  "id" SERIAL PRIMARY KEY NOT NULL,
   "name" varchar,
   "dateAdded" timestamp,
   "ipAddress" varchar,
@@ -28,7 +29,7 @@ CREATE TABLE "device" (
 );
 
 CREATE TABLE "scanParameters" (
-  "id" SERIAL PRIMARY KEY,
+  "id" SERIAL PRIMARY KEY NOT NULL,
   "networkID" int,
   "name" varchar,
   "allowICMPResponders" bool,
@@ -38,8 +39,8 @@ CREATE TABLE "scanParameters" (
   "wmiRetries" int,
   "hopCount" int,
   "discoveryTimeout" int,
-  "nextScanTime" int,
-  "timeBetweenScans" int,
+  "nextScanTime" bigint,
+  "timeBetweenScans" bigint,
   "probeID" int,
   "scanType" int,
   "ipStartRange" varchar[],
@@ -50,14 +51,14 @@ CREATE TABLE "scanParameters" (
 );
 
 CREATE TABLE "SNMP_Credentials" (
-  "id" SERIAL PRIMARY KEY,
+  "id" SERIAL PRIMARY KEY NOT NULL,
   "nickname" varchar,
   "snmpType" int,
   "communityString" varchar
 );
 
 CREATE TABLE "WMI_Credentials" (
-  "id" SERIAL PRIMARY KEY,
+  "id" SERIAL PRIMARY KEY NOT NULL,
   "nickname" varchar,
   "username" varchar,
   "password" varchar
@@ -66,7 +67,8 @@ CREATE TABLE "WMI_Credentials" (
 CREATE TABLE "Scan_Results" (
   "scanID" int,
   "date" timestamp,
-  "devicesFound" varchar[]
+  "minutesSpent" int,
+  "devicesFound" json
 );
 
 ALTER TABLE "network" ADD FOREIGN KEY ("snmpCredentials") REFERENCES "SNMP_Credentials" ("id");
