@@ -33,11 +33,12 @@ def isDeviceValid(job_q, scanParams, wmiCreds, snmpCreds, results_q):
         if ip is None: break
 
         try:
+            r = {"ip": ip}
             # Ping device.
             subprocess.check_call(['ping','-n','1','-w','250',ip],
                                     stdout=DEVNULL)
             # Try to get sysname via snmp.
-            snmpCredID = -1
+            snmpCredID = 0
             for snmpCred in snmpCreds:
                 auth = cmdgen.CommunityData(snmpCred["communityString"])
                 cmdGen = cmdgen.CommandGenerator()
@@ -52,11 +53,13 @@ def isDeviceValid(job_q, scanParams, wmiCreds, snmpCreds, results_q):
                 snmpCredID = snmpCred["id"]
                 break
             # TODO: Wmi credential query
-            wmICredID = -1
+            wmiCredID = 0
             # No credentials worked & we want to ignore those that only respond to pings.
-            if snmpCredID == -1 and wmICredID == -1 and scanParams['allowICMPResponders'] == False:
+            if snmpCredID == 0 and wmiCredID == 0 and scanParams['allowICMPResponders'] == False:
                 raise Exception("creds failed")
-            results_q.put(str(ip))
+            r['snmpCredID'] = snmpCredID 
+            r['wmiCredID'] = wmiCredID
+            results_q.put(r)
         except:
             # One of the checks failed.
             pass
