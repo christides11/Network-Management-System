@@ -164,13 +164,15 @@ def ReceiveScanLogFromProbe(sid, data):
         print("NO DEVICES FOUND!")
         return
     cursor = dbConn.cursor()
-    cursor.execute('INSERT INTO public.\"Scan_Results\" VALUES ({}, \'{}\', {}, \'{}\')'.format(data["discoveryID"], str(datetime.now()), 5, json.dumps(data["devicesFound"]) ))
+    cursor.execute('INSERT INTO public.\"Scan_Results\" VALUES ({}, \'{}\', {}, \'{}\')'.format(data["discoveryID"], datetime.now().strftime("%m/%d/%Y, %H:%M:%S"), 5, json.dumps(data["devicesFound"]) ))
     dbConn.commit()
     cursor.close()
 
 @sio.event
 async def RequestScanLogs(sid):
     record = fetchAllFromDB("SELECT * FROM public.\"Scan_Results\"")
+    for x in range(len(record)):
+        record[x]['date'] = record[x]['date'].strftime("%m/%d/%Y, %H:%M:%S")
     await sio.emit('ReceiveScanLogs', record)
 
 def current_milli_time():
