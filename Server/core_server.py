@@ -220,7 +220,16 @@ async def RequestSNMPCredentials(sid):
     cursor = dbConn.cursor()
     cursor.execute("SELECT * FROM public.\"SNMP_Credentials\"")
     record = cursor.fetchall()
+    cursor.close()
     await sio.emit('ReceiveSNMPCredentials', record)
+
+@sio.event
+async def RequestSNMPCredential(sid, data):
+    cursor = dbConn.cursor()
+    cursor.execute("SELECT * FROM public.\"SNMP_Credentials\" WHERE \"id\"={}".format(data['credentialID']))
+    record = cursor.fetchone()
+    cursor.close()
+    await sio.emit('ReceiveSNMPCredential', record)
 
 @sio.event
 async def RequestWMICredentials(sid):
@@ -228,6 +237,15 @@ async def RequestWMICredentials(sid):
     cursor.execute("SELECT * FROM public.\"WMI_Credentials\"")
     record = cursor.fetchall()
     await sio.emit('ReceiveWMICredentials', record)
+
+@sio.event
+async def RequestSNMPCredential(sid, data):
+    cursor = dbConn.cursor()
+    cursor.execute("SELECT * FROM public.\"WMI_Credentials\" WHERE \"id\"={}".format(data['credentialID']))
+    record = cursor.fetchone()
+    cursor.close()
+    await sio.emit('ReceiveWMICredential', record)
+
 
 ### --- DEVICES --- ###
 
