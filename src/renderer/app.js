@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { io } from 'socket.io-client';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import LoginPage from '../main/login/login';
@@ -19,16 +19,15 @@ export default function App(){
 
     const [sessionID, setSessionID] = useState(null);
 
+    const receiveDeviceRegisterResult = useCallback((data) => {
+        console.log(data);
+    }, []);
+
     useEffect(() => {
-        /*console.log("a");
-        if(socket != null){
-            console.log(window.location.pathname);
-        }*/
-        //console.log(window.location.pathname)
-        //if(sessionID == null && window.location.pathname != "/"){
-        //    Navigate("/");
-        //}
-        return () => { }
+        socket.on("RegisterDeviceResult", receiveDeviceRegisterResult)
+        return () => { 
+            socket.off("RegisterDeviceResult", receiveDeviceRegisterResult)
+        }
     }, []);
 
     return (

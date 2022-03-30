@@ -60,7 +60,14 @@ function DiscoveryLog({socket}){
     }, []);
 
     function RegisterDevices(){
-
+        for(let i = 0; i < discoveryLogs.length; i++){
+            for(let x = 0; x < discoveryLogs[i].devicesFound.length; x++){
+                if(selected[i][x] == false) continue;
+                let device = discoveryLogs[i].devicesFound[x];
+                let dJob = discoveryJobs[discoveryLogs[i].scanID];
+                socket.emit('RegisterDevice', {"deviceName": device.deviceName, "ip": device.ip, "parentProbe": dJob.probeID, "snmpCredential": device.snmpCredID, "wmiCredential": device.wmiCredID});
+            }
+        }
     }
 
     function RequestScanLogs(){

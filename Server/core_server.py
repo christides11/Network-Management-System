@@ -78,6 +78,8 @@ def fetchOneFromDB(action):
     column_names = [desc[0] for desc in cursor.description]
     cursor.close()
     result = {}
+    if record is None:
+        return record
     for row in record:
         result = create_record(row, column_names)
     return result
@@ -278,21 +280,20 @@ async def RequestDeviceList(sid):
 # Register the given device to the database for tracking.
 @sio.event
 async def RegisterDevice(sid, data):
-    result = {"result": False, "ip": data["ip"]}
-    d = fetchOneFromDB("SELECT * FROM public.device WHERE \"ipAddress\" = {}".format(data["ip"]))
-    if d.length == 0:
-        print("Registering device {}".format(data["deviceName"]))
-        try:
+    result = {"result": False, "ip": data["ip"], "reason": "Duplicate entry."}
+    try:
+        d = fetchOneFromDB("SELECT * FROM public.device WHERE \"ipAddress\" = \'{}\'".format(data["ip"]))
+        if d is None:
+            print("Registering device {}".format(data["deviceName"]))
             cursor = dbConn.cursor()
-            cursor.execute("INSERT INTO public.device VALUES (DEFAULT, \'{}\', {}, \'{}\', {}, {}, {}, {}, {})".format(data['deviceName'], datetime.now().strftime("%m/%d/%Y, %H:%M:%S"), data['ip'], NULL, data['parentProbe'], 1, data['snmpCredential'], data['wmiCredential'] ))
+            cursor.execute("INSERT INTO public.device(\"name\", \"dateAdded\", \"ipAddress\", \"macAddress\", \"parent\", \"networkID\", \"snmpCredentials\", \"wmiCredentials\") VALUES (\'{}\', \'{}\', \'{}\', {}, {}, {}, {}, {})".format(data['deviceName'], datetime.now().strftime("%m/%d/%Y, %H:%M:%S"), data['ip'], NULL, data['parentProbe'], 1, data['snmpCredential'] if data['snmpCredential'] > 0 else 'NULL', data['wmiCredential'] if data['wmiCredential'] > 0 else 'NULL' ))
             dbConn.commit()
             cursor.close()
             result['result'] = True
-        except Exception as e:
-            print(e)
-            result['result'] = False
-            result['reason'] = str(e)
-            pass
+    except Exception as e:
+        result['result'] = False
+        result['reason'] = str(e)
+        pass
     await sio.emit('RegisterDeviceResult', result, sid)
 
 
