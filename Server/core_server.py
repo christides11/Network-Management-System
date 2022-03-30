@@ -275,6 +275,11 @@ async def RequestDeviceList(sid):
     result = fetchAllFromDB("SELECT * FROM public.device")
     await sio.emit('ReceiveDeviceList', result)
 
+# Register the given device to the database for tracking.
+@sio.event
+async def RegisterDevice(sid, data):
+    print("Registering ...")
+
 
 ### --- INITIALIZATION --- ###
 
