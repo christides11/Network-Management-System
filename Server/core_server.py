@@ -278,7 +278,22 @@ async def RequestDeviceList(sid):
 # Register the given device to the database for tracking.
 @sio.event
 async def RegisterDevice(sid, data):
-    print("Registering ...")
+    result = {"result": False, "ip": data["ip"]}
+    d = fetchOneFromDB("SELECT * FROM public.device WHERE \"ipAddress\" = {}".format(data["ip"]))
+    if d.length == 0:
+        print("Registering device {}".format(data["deviceName"]))
+        try:
+            cursor = dbConn.cursor()
+            cursor.execute("INSERT INTO public.device VALUES (DEFAULT, \'{}\', {}, \'{}\', {}, {}, {}, {}, {})".format(data['deviceName'], datetime.now().strftime("%m/%d/%Y, %H:%M:%S"), data['ip'], NULL, data['parentProbe'], 1, data['snmpCredential'], data['wmiCredential'] ))
+            dbConn.commit()
+            cursor.close()
+            result['result'] = True
+        except Exception as e:
+            print(e)
+            result['result'] = False
+            result['reason'] = str(e)
+            pass
+    await sio.emit('RegisterDeviceResult', result, sid)
 
 
 ### --- INITIALIZATION --- ###

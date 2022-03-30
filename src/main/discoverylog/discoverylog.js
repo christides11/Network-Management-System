@@ -6,12 +6,11 @@ import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 
 function DiscoveryLog({socket}){
 
-    const [discoveryJobs, setDiscoveryJobs] = useState([]);
+    const [discoveryJobs, setDiscoveryJobs] = useState({});
     const [discoveryLogs, setDiscoveryLogs] = useState([]);
     const [selected, setSelected] = useState([]);
     const [test, setTest] = useState(0); // Force page to refresh from 2d array change, doesn't seem to change otherwise.
     const [open, setOpen] = useState([]);
-    //const []
 
     const receiveScanLogs = useCallback((data) => {
         let tfList = [];
@@ -26,14 +25,28 @@ function DiscoveryLog({socket}){
         setDiscoveryLogs(data);
       }, []);
 
+    const receiveScanList = useCallback((data) => {
+        let temp = {};
+        for(let i = 0; i < data.length; i++){
+            temp[data[i].id] = data[i];
+        }
+        setDiscoveryJobs(temp);
+        console.log(temp);
+    }, []);
+
     useEffect(() => {
         socket.on("ReceiveScanLogs", receiveScanLogs)
+        socket.on("ReceiveDiscoveryScanList", receiveScanList)
+        if(Object.keys(discoveryJobs).length == 0){
+            socket.emit('RequestDiscoveryScanList');
+        }
         if(discoveryLogs.length == 0){
             socket.emit('RequestScanLogs');
         }
 
         return () => {
             socket.off("ReceiveScanLogs", receiveScanLogs)
+            socket.off("ReceiveDiscoveryScanList", receiveScanList)
         }
     }, [socket]);
 
@@ -46,8 +59,16 @@ function DiscoveryLog({socket}){
         setOpen(temp);
     }, []);
 
+    function RegisterDevices(){
+
+    }
+
     function RequestScanLogs(){
         socket.emit('RequestScanLogs');
+    }
+
+    function RequestDiscoveryScans(){
+        socket.emit('RequestDiscoveryScanList');
     }
 
     function SetSelectedStatus(idx, idy){
@@ -81,10 +102,10 @@ function DiscoveryLog({socket}){
                     <TableCell>
 
                     </TableCell>
-                    <TableCell component="th" scope="row">
-                        {row.scanID}
+                    <TableCell>
+                        {discoveryJobs[row.scanID].name}
                     </TableCell>
-                    <TableCell component="th" scope="row">
+                    <TableCell>
                         {row.date}
                     </TableCell>
                     <TableCell>
@@ -100,11 +121,13 @@ function DiscoveryLog({socket}){
                                 </Typography>
                                 <Table size="small">
                                     <TableHead>
-                                        <TableCell></TableCell>
-                                        <TableCell>Device Name</TableCell>
-                                        <TableCell>Device IP</TableCell>
-                                        <TableCell>SNMP Credentials</TableCell>
-                                        <TableCell>WMI Credentials</TableCell>
+                                        <TableRow>
+                                            <TableCell></TableCell>
+                                            <TableCell>Device Name</TableCell>
+                                            <TableCell>Device IP</TableCell>
+                                            <TableCell>SNMP Credentials</TableCell>
+                                            <TableCell>WMI Credentials</TableCell>
+                                        </TableRow>
                                     </TableHead>
                                     <TableBody>
                                         {row.devicesFound.map((device, idx) => (
@@ -137,12 +160,14 @@ function DiscoveryLog({socket}){
                 <TableContainer component={Paper}>
                      <Table aria-label="collapsible table">
                          <TableHead>
-                            <TableCell />
-                            <TableCell padding="checkbox">
-                            </TableCell>
-                            <TableCell>Discovery Job</TableCell>
-                            <TableCell>Scan Date</TableCell>
-                            <TableCell>Devices Found</TableCell>
+                            <TableRow>
+                                <TableCell />
+                                <TableCell padding="checkbox">
+                                </TableCell>
+                                <TableCell>Discovery Job</TableCell>
+                                <TableCell>Scan Date</TableCell>
+                                <TableCell>Devices Found</TableCell>
+                            </TableRow>
                          </TableHead>
                          <TableBody>
                              {discoveryLogs.map((log, idx) => (
@@ -154,7 +179,7 @@ function DiscoveryLog({socket}){
                 </TableContainer>
             }
             <br/>
-            <button>Register Device(s)</button>
+            <button onClick={RegisterDevices}>Register Device(s)</button>
         </div>
     );
 }
