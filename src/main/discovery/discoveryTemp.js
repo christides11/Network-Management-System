@@ -82,7 +82,7 @@ function DiscoveryPage({socket}){
         socket.emit('RegisterDiscoveryScan', 
         {
                 "network": 1,
-                "probeID": 9,
+                "probeID": probeList[probe].id,
                 "discoveryName": discoveryName, 
                 "scanType": 0, // Address Range(s) or Subnet(s)
                 "ipStartRanges": [startAddress],

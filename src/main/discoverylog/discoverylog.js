@@ -54,7 +54,7 @@ function DiscoveryLog({socket}){
         if(open.length == discoveryLogs.length) return;
         let temp = [];
         for(let i = 0; i < discoveryLogs.length; i++){
-            temp.append(false);
+            temp.push(false);
         }
         setOpen(temp);
     }, []);

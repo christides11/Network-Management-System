@@ -55,19 +55,26 @@ def create_record(obj, fields):
     ''' given obj from db returns named tuple with fields mapped to values '''
     result = {}
     for x in range(len(fields)):
-        result[str(fields[x])] = obj[x]
+        resultObj = obj[x]
+        if isinstance(obj[x], datetime):
+            resultObj = obj[x].__str__()
+        result[str(fields[x])] = resultObj
     return result
 
 # Execute the given command on the DB and return a list of results. Each result is a dictionary with the keys being
 # the name of the given column.
 def fetchAllFromDB(action):
-    cursor = dbConn.cursor()
-    cursor.execute(action)
-    record = cursor.fetchall()
-    column_names = [desc[0] for desc in cursor.description]
     result = []
-    for row in record:
-        result.append(create_record(row, column_names))
+    cursor = dbConn.cursor()
+    try:
+        cursor.execute(action)
+        record = cursor.fetchall()
+        column_names = [desc[0] for desc in cursor.description]
+        for row in record:
+            result.append(create_record(row, column_names))
+    except Exception as e:
+        print(e)
+        pass
     cursor.close()
     return result
 
@@ -140,7 +147,7 @@ async def RegisterDiscoveryScan(sid, data):
     cursor = dbConn.cursor()
     result = False
     try:
-        st = 'INSERT INTO public."scanParameters" VALUES ({}, \'{}\', {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, ARRAY {}, ARRAY {}, ARRAY {}, ARRAY {}, ARRAY {})'.format(data['network'], data['discoveryName'], data['icmpRespondersOnly'], data['snmpTimeout'], data['scanTimeout'], data['snmpRetries'], data['wmiRetries'], 
+        st = 'INSERT INTO public."scanParameters" VALUES (DEFAULT, {}, \'{}\', {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, ARRAY {}, ARRAY {}, ARRAY {}, ARRAY {}, ARRAY {})'.format(data['network'], data['discoveryName'], data['icmpRespondersOnly'], data['snmpTimeout'], data['scanTimeout'], data['snmpRetries'], data['wmiRetries'], 
             data['hopCount'], data['discoveryTimeout'], data['nextDiscoveryTime'], data['discoveryInterval'], data['probeID'], data['scanType'], data['ipStartRanges'],
             data['ipEndRanges'], data['subnets'], data['snmpCredentials'], data['wmiCredentials'])
         cursor.execute(st)
@@ -173,8 +180,8 @@ def ReceiveScanLogFromProbe(sid, data):
 @sio.event
 async def RequestScanLogs(sid):
     record = fetchAllFromDB("SELECT * FROM public.\"Scan_Results\"")
-    for x in range(len(record)):
-        record[x]['date'] = record[x]['date'].strftime("%m/%d/%Y, %H:%M:%S")
+    #for x in range(len(record)):
+    #    record[x]['date'] = record[x]['date'].strftime("%m/%d/%Y, %H:%M:%S")
     await sio.emit('ReceiveScanLogs', record)
 
 def current_milli_time():
@@ -269,7 +276,7 @@ async def RequestProbeList(sid):
 @sio.event
 async def RequestDeviceListFromProbe(sid, probeID):
     result = fetchAllFromDB("SELECT * FROM public.device WHERE \"parent\" = {}".format(probeID))
-    await sio.emit('ReceiveDeviceList', result)
+    await sio.emit('ReceiveDeviceList', {"devices": result, "probeID": probeID})
 
 # returns a list of all devices in the database.
 @sio.event
@@ -286,9 +293,9 @@ async def RegisterDevice(sid, data):
         if d is None:
             print("Registering device {}".format(data["deviceName"]))
             cursor = dbConn.cursor()
-            cursor.execute("INSERT INTO public.device(\"name\", \"dateAdded\", \"ipAddress\", \"macAddress\", \"parent\", \"networkID\", \"snmpCredentials\", \"wmiCredentials\") VALUES (\'{}\', \'{}\', \'{}\', {}, {}, {}, {}, {})".format(data['deviceName'], datetime.now().strftime("%m/%d/%Y, %H:%M:%S"), data['ip'], NULL, data['parentProbe'], 1, data['snmpCredential'] if data['snmpCredential'] > 0 else 'NULL', data['wmiCredential'] if data['wmiCredential'] > 0 else 'NULL' ))
-            dbConn.commit()
+            cursor.execute("INSERT INTO public.device VALUES (DEFAULT, \'{}\', \'{}\', \'{}\', {}, {}, {}, {}, {})".format(data['deviceName'], datetime.now().strftime("%m/%d/%Y, %H:%M:%S"), data['ip'], NULL, data['parentProbe'], 1, data['snmpCredential'] if data['snmpCredential'] > 0 else 'NULL', data['wmiCredential'] if data['wmiCredential'] > 0 else 'NULL' ))
             cursor.close()
+            dbConn.commit()
             result['result'] = True
     except Exception as e:
         result['result'] = False
@@ -314,7 +321,7 @@ def Initialize():
     record = cursor.fetchall()
     if len(record) == 0:
         cursor.execute('INSERT INTO public.device("name", "dateAdded", "ipAddress", "macAddress", "networkID") VALUES (\'{}\', \'{}\', \'{}\', \'{}\', 1)'
-            .format('local probe', str(datetime.now()), 'localhost', str(get_mac_address(hostname="localhost"))) )    
+            .format('local probe', datetime.now().strftime("%m/%d/%Y, %H:%M:%S"), 'localhost', str(get_mac_address(hostname="localhost"))) )    
     dbConn.commit()
     # Get list of probes.
     cursor.execute("SELECT * FROM public.device WHERE \"parent\" IS NULL")

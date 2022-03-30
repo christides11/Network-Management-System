@@ -115,8 +115,8 @@ async def connect():
 @sio.event
 async def Probe_RunDiscoverScan(data):
     print('Probe received discovery job, starting...')
-    print(data["wmiCreds"])
-    print(data["snmpCreds"])
+    #print(data["wmiCreds"])
+    #print(data["snmpCreds"])
     result = []
     match data['params']['scanType']:
         case 0:
