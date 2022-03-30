@@ -33,7 +33,7 @@ def isDeviceValid(job_q, scanParams, wmiCreds, snmpCreds, results_q):
         if ip is None: break
 
         try:
-            r = {"ip": ip}
+            r = {"deviceName": str(ip), "ip": ip}
             # Ping device.
             subprocess.check_call(['ping','-n','1','-w','250',ip],
                                     stdout=DEVNULL)
@@ -50,6 +50,8 @@ def isDeviceValid(job_q, scanParams, wmiCreds, snmpCreds, results_q):
                 )
                 if errorIndication:
                     continue
+                for oid, val in varBinds:
+                    r["deviceName"] = str(val.prettyPrint())
                 snmpCredID = snmpCred["id"]
                 break
             # TODO: Wmi credential query

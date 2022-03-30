@@ -6,6 +6,7 @@ import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 
 function DiscoveryLog({socket}){
 
+    const [discoveryJobs, setDiscoveryJobs] = useState([]);
     const [discoveryLogs, setDiscoveryLogs] = useState([]);
     const [selected, setSelected] = useState([]);
     const [test, setTest] = useState(0); // Force page to refresh from 2d array change, doesn't seem to change otherwise.
@@ -27,6 +28,9 @@ function DiscoveryLog({socket}){
 
     useEffect(() => {
         socket.on("ReceiveScanLogs", receiveScanLogs)
+        if(discoveryLogs.length == 0){
+            socket.emit('RequestScanLogs');
+        }
 
         return () => {
             socket.off("ReceiveScanLogs", receiveScanLogs)
@@ -97,6 +101,7 @@ function DiscoveryLog({socket}){
                                 <Table size="small">
                                     <TableHead>
                                         <TableCell></TableCell>
+                                        <TableCell>Device Name</TableCell>
                                         <TableCell>Device IP</TableCell>
                                         <TableCell>SNMP Credentials</TableCell>
                                         <TableCell>WMI Credentials</TableCell>
@@ -107,6 +112,7 @@ function DiscoveryLog({socket}){
                                                 <TableCell>
                                                     <Checkbox checked={s[k][idx]} onClick={() => SetSelectedStatus(k, idx)} />
                                                 </TableCell>
+                                                <TableCell>{device.deviceName}</TableCell>
                                                 <TableCell>{device.ip}</TableCell>
                                                 <TableCell>{device.snmpCredID}</TableCell>
                                                 <TableCell>{device.wmiCredID}</TableCell>
