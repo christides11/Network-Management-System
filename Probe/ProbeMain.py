@@ -9,39 +9,65 @@ import multiprocessing
 import subprocess
 import os
 from datetime import datetime
+from aiorun import run
+from getmac import get_mac_address
+from pysnmp.entity.rfc3413.oneliner import cmdgen
+if sys.platform.startswith("win"):
+    import wmi as wmi
+elif sys.platform.startswith("linux"):
+    import wmi_client_wrapper as wmi
 
 sio = socketio.AsyncClient()
 socket.setdefaulttimeout(0.25)
 
-def singlePing(job_q, results_q):
+probeID = 1
+
+#SNMP command used for checking if a device can be queried.
+SYSNAME = '1.3.6.1.2.1.1.5.0'
+
+# Use a few commands to check if a device is valid to be added to the given scan.
+def isDeviceValid(job_q, scanParams, wmiCreds, snmpCreds, results_q):
     DEVNULL = open(os.devnull,'w')
     while True:
         ip = job_q.get()
         if ip is None: break
 
         try:
+            r = {"deviceName": str(ip), "ip": ip}
+            # Ping device.
             subprocess.check_call(['ping','-n','1','-w','250',ip],
                                     stdout=DEVNULL)
-            results_q.put(ip)
+            # Try to get sysname via snmp.
+            snmpCredID = 0
+            for snmpCred in snmpCreds:
+                auth = cmdgen.CommunityData(snmpCred["communityString"])
+                cmdGen = cmdgen.CommandGenerator()
+                errorIndication, errorStatus, errorIndex, varBinds = cmdGen.getCmd(
+                    auth,
+                    cmdgen.UdpTransportTarget((ip, 161)),
+                    cmdgen.MibVariable(SYSNAME),
+                    lookupMib=False,
+                )
+                if errorIndication:
+                    continue
+                for oid, val in varBinds:
+                    r["deviceName"] = str(val.prettyPrint())
+                snmpCredID = snmpCred["id"]
+                break
+            # TODO: Wmi credential query
+            wmiCredID = 0
+            # No credentials worked & we want to ignore those that only respond to pings.
+            if snmpCredID == 0 and wmiCredID == 0 and scanParams['allowICMPResponders'] == False:
+                raise Exception("creds failed")
+            r['snmpCredID'] = snmpCredID 
+            r['wmiCredID'] = wmiCredID
+            results_q.put(r)
         except:
+            # One of the checks failed.
             pass
 
-def singleTcpScan(job_q, results_q):
-    DEVNULL = open(os.devnull,'w')
-    while True:
-        ip = job_q.get()
-        if ip is None: break
-
-        s = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
-        # TRY WINDOWS PORT
-        try:
-            con = s.connect((ip, 445))
-            results_q.put(ip)
-            con.close()
-        except:
-            pass
-
-def pingScanner(startAddr, endAddr, tcpScan):
+# Finds devices simultaneously using multithreading. Returns the list of IPs found.
+def ScannerTask(scanParams, startAddr, endAddr, wmiCreds, snmpCreds):
     start = startAddr.split(".")
     end = endAddr.split(".")
     pool_size = 30
@@ -49,14 +75,10 @@ def pingScanner(startAddr, endAddr, tcpScan):
     results = multiprocessing.Queue()
     pool = NULL
     t1 = datetime.now()
-    
-    if tcpScan == False:
-        pool = [ multiprocessing.Process(target=singlePing, args=(jobs,results)) 
-                for i in range(pool_size) ]
-    else:
-        pool = [ multiprocessing.Process(target=singleTcpScan, args=(jobs,results)) 
-                for i in range(pool_size) ]
 
+    pool = [ multiprocessing.Process(target=isDeviceValid, args=(jobs,scanParams,wmiCreds,snmpCreds,results)) 
+            for i in range(pool_size) ]
+    
     for s in range(0, len(start)):
         start[s] = int(start[s])
         end[s] = int(end[s])
@@ -78,30 +100,38 @@ def pingScanner(startAddr, endAddr, tcpScan):
 
     finalResults = []
     while not results.empty():
-        ip = results.get()
-        finalResults.append(str(ip))
-        #print(ip)
+        deviceResult = results.get()
+        finalResults.append(deviceResult)
     t2 = datetime.now()
     total = t2 - t1
-    print ("Scan completed in: ",total)
+    print ("Scan completed in: ", total)
     return finalResults
 
 @sio.event
 async def connect():
-    print("connection established")
-    await sio.emit('testCall')
+    print("CLIENT: {}: connection established. Trying link.".format(probeID))
+    await sio.emit('LinkProbe', probeID)
 
 @sio.event
-async def DiscoverDevicesICMP(data):
-    print('PROBE:')
-    print("Discovering devices using ICMP (ping) scan.")
-    result = pingScanner(data["searchList"][0], data["searchList"][1], False)
-    await sio.emit('ReceiveScanResults', {"resultList": result} )
+async def Probe_RunDiscoverScan(data):
+    print('Probe received discovery job, starting...')
+    #print(data["wmiCreds"])
+    #print(data["snmpCreds"])
+    result = []
+    match data['params']['scanType']:
+        case 0:
+            print("SCAN TYPE: Address Ranges")
+            for x in range(len(data['params']["ipStartRange"])):
+                result += ScannerTask(data, data['params']["ipStartRange"][x], data['params']["ipEndRange"][x], data['wmiCreds'], data['snmpCreds'])
+        case 1:
+            #TODO
+            print("SCAN TYPE: Subnets")
+    await sio.emit('ReceiveScanLogFromProbe', {'discoveryID': data['params']['id'], 'devicesFound': result})
 
+# Probe tries to ping a given IP address, returning information on the device if successful.
 @sio.event
-def DiscoverDevicesTCP(listIsIPRanges, searchList):
-    print("Discovering devices using TCP port scan.")
-    pingScanner(searchList[0], searchList[1], True)
+async def Probe_TryPingDevice(data):
+    print('...')
 
 @sio.event
 async def disconnect():
@@ -115,6 +145,6 @@ if __name__ == '__main__':
     serverIP = 'http://localhost:5000'
     if len(sys.argv) > 1:
         serverIP = str(sys.argv[1])
-    #DiscoverDevicesICMP(0, ["10.4.1.10", "10.4.1.100"])
-    #DiscoverDevicesTCP(0, ["10.4.3.150", "10.4.3.250"])
-    asyncio.run(probeMain(serverIP))
+    if len(sys.argv) > 2:
+        probeID = int(sys.argv[2])
+    run(probeMain(serverIP))
