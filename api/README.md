@@ -2,8 +2,8 @@
 
 ## How to use:
 1. Use JavaScript native Fetch API or install [Axios](https://axios-http.com/docs/example).
-2. Create an method like the examples below to retrieve data.
-3. Start the server. CD into the `api` directory and type `flask run`. 👍 Great! The server should be running on a PORT on your computer
+2. Create a method like the examples below to retrieve data.
+3. Start the server. CD into the `api` directory and type `python app.py` to do so. 👍 Great! The server should be running on a PORT on your computer.
 
 Notice that we query from the the URL the server is running on! This is where we will make requests
 
@@ -47,7 +47,7 @@ You can also use Postman.
 ## To run the server:
 
 1. CD into the `api` directory
-2. Type `flask run` in the terminal.
+2. Type `python app.py` in the terminal.
 
 
 ## API Reference
