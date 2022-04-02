@@ -37,8 +37,8 @@ export default function App(){
                 <Route path="/" element={<LoginPage socket={socket} sessionID={sessionID} setSessionID={setSessionID} />} />
                 <Route path='/home' exact element={<Home />} />
                 <Route path="/summary" element={<SummaryPage socket={socket} />} />
-                <Route path="/device" element={<DevicePage />} />
                 <Route path="/devices" element={<DevicesPage socket={socket} />} />
+                <Route path="/devices/:deviceId" element={<DevicePage />} />
                 <Route path="/discovery" element={<DiscoveryPage socket={socket} />} />
                 <Route path="/discoveryjobs" element={<DiscoveryJobsPage socket={socket} />} />
                 <Route path="/discoverylog" element={<DiscoveryLog socket={socket} />} />

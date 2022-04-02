@@ -1,6 +1,6 @@
 import './devices.css';
 import React, { useEffect, useContext, useCallback, useRef} from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import moment from 'moment';
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
@@ -123,7 +123,11 @@ function DevicesPage({socket}){
                                             <TableRow key={idx}>
                                                 <TableCell>{device.name}</TableCell>
                                                 <TableCell>{device.ipAddress}</TableCell>
-                                                <TableCell align="right"><Button variant="contained">View Details...</Button></TableCell>
+                                                <TableCell align="right">
+                                                    <Button variant="contained"> 
+                                                        <Link to={`/devices/${device.id}`} key={device.id}>View Details...</Link> 
+                                                    </Button>
+                                                </TableCell>
                                             </TableRow>
                                         ))
                                         }
