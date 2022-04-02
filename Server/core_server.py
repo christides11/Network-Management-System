@@ -223,6 +223,14 @@ def disconnect(sid):
             probes[item[0]]['sid'] = -1
     print('disconnect ', sid)
 
+### --- NETWORK --- ###
+
+# Returns the network with the given id.
+@sio.event
+async def RequestNetwork(sid, networkId):
+    result = fetchOneFromDB("SELECT * FROM public.network WHERE id = {}".format(networkId))
+    await sio.emit('ReceiveNetwork', result, sid)
+
 ### --- CREDENTIALS --- ###
 
 @sio.event
@@ -234,9 +242,9 @@ async def RequestSNMPCredentials(sid):
     await sio.emit('ReceiveSNMPCredentials', record, sid)
 
 @sio.event
-async def RequestSNMPCredential(sid, data):
+async def RequestSNMPCredential(sid, credentialId):
     cursor = dbConn.cursor()
-    cursor.execute("SELECT * FROM public.\"SNMP_Credentials\" WHERE \"id\"={}".format(data['credentialID']))
+    cursor.execute("SELECT * FROM public.\"SNMP_Credentials\" WHERE \"id\"={}".format(credentialId))
     record = cursor.fetchone()
     cursor.close()
     await sio.emit('ReceiveSNMPCredential', record, sid)
@@ -249,9 +257,9 @@ async def RequestWMICredentials(sid):
     await sio.emit('ReceiveWMICredentials', record, sid)
 
 @sio.event
-async def RequestSNMPCredential(sid, data):
+async def RequestWMICredential(sid, credentialId):
     cursor = dbConn.cursor()
-    cursor.execute("SELECT * FROM public.\"WMI_Credentials\" WHERE \"id\"={}".format(data['credentialID']))
+    cursor.execute("SELECT * FROM public.\"WMI_Credentials\" WHERE \"id\"={}".format(credentialId))
     record = cursor.fetchone()
     cursor.close()
     await sio.emit('ReceiveWMICredential', record, sid)
