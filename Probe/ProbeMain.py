@@ -41,7 +41,7 @@ def isDeviceValid(job_q, scanParams, wmiCreds, snmpCreds, results_q):
                 cmdGen = cmdgen.CommandGenerator()
                 errorIndication, errorStatus, errorIndex, varBinds = cmdGen.getCmd(
                     auth,
-                    cmdgen.UdpTransportTarget((ip, 161)),
+                    cmdgen.UdpTransportTarget((ip, 161), timeout=scanParams['snmpTimeout']/1000.0, retries=scanParams['snmpRetries']),
                     cmdgen.MibVariable(SYSNAME),
                     lookupMib=False,
                 )

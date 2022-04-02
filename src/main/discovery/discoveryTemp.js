@@ -24,8 +24,8 @@ function DiscoveryPage({socket}){
     // MONITORING SETTINGS
     const [discoveryName, setDiscoveryName] = useState("");
     const [icmpRespondersOnly, setICMPResponders] = useState(true);
-    const [snmpTimeout, setSNMPTimeout] = useState(100);
-    const [scanTimeout, setScanTimeout] = useState(600000);
+    const [snmpTimeout, setSNMPTimeout] = useState(500);
+    const [scanTimeout, setScanTimeout] = useState(2000);
     const [snmpRetries, setSNMPRetries] = useState(2);
     const [wmiRetries, setWMIRetries] = useState(2);
     const [hopCount, setHopCount] = useState(0);
@@ -159,7 +159,7 @@ function DiscoveryPage({socket}){
             <label htmlFor="icmpResponders">  Include Devices with only ICMP response?</label><br/>
             <label htmlFor="snmpTimeout">SNMP Timeout (ms):</label>
             <input type="number" id="snmpTimeout" value={snmpTimeout} onInput={e => setSNMPTimeout(e.target.value)} /><br/>
-            <label htmlFor="scanTimeout">Scan Timeout (ms):</label>
+            <label htmlFor="scanTimeout">Device Timeout (ms):</label>
             <input type="number" id="scanTimeout" value={scanTimeout} onInput={e => setScanTimeout(e.target.value)} /><br/>
             <label htmlFor="snmpRetries">SNMP Retries:</label>
             <input type="number" id="snmpRetries" value={snmpRetries} onInput={e => setSNMPRetries(e.target.value)} /><br/>
