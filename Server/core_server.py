@@ -1,11 +1,6 @@
 from asyncio.windows_events import NULL
-from glob import glob
 from aiohttp import web
-import socket
 import socketio
-import scapy.all as scapy
-from mac_vendor_lookup import MacLookup
-from threading import Thread
 import sys
 import psycopg2
 import json
@@ -17,7 +12,6 @@ from datetime import datetime
 from aiorun import run
 from getmac import get_mac_address
 import time
-from collections import namedtuple
 
 localProbeID = 1
 hostProbe = NULL

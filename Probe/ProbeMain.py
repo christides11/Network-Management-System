@@ -1,7 +1,4 @@
 from asyncio.windows_events import NULL
-from re import search
-from aiohttp import web
-import asyncio
 import socketio
 import sys
 import socket
