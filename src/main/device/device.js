@@ -11,14 +11,15 @@ function DevicePage(){
 
     const receiveDevice = useCallback((data) => {
         console.log(data);
+        setDevice(data);
     });
 
     useEffect(() => {
-        socket.on("RequestDevice", receiveDevice)
+        socket.on("ReceiveDevice", receiveDevice)
 
-        if(deviceRef.current == null) socket.emit("RequestDevice");
+        if(deviceRef.current == null) socket.emit("RequestDevice", params.deviceId);
         return () => { 
-            socket.off("RequestDevice", receiveDevice)
+            socket.off("ReceiveDevice", receiveDevice)
         }
     }, []);
 
@@ -29,7 +30,8 @@ function DevicePage(){
             }
             {device != null &&
                 <>
-                <h1>{params.deviceId}</h1>
+                <h1>{device.name}</h1>
+                <h2>{device.ipAddress}</h2>
                 </>
             }
         </div>

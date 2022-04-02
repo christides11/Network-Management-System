@@ -70,6 +70,8 @@ def fetchAllFromDB(action):
         cursor.execute(action)
         record = cursor.fetchall()
         column_names = [desc[0] for desc in cursor.description]
+        if record is None:
+            return result
         for row in record:
             result.append(create_record(row, column_names))
     except Exception as e:
@@ -87,8 +89,7 @@ def fetchOneFromDB(action):
     result = None
     if record is None:
         return record
-    for row in record:
-        result = create_record(row, column_names)
+    result = create_record(record, column_names)
     return result
 
 def lst2pgarr(alist):
@@ -102,6 +103,9 @@ def intlst2pgarr(alist):
             temp += ","
     temp += "}"
     return temp
+
+def current_milli_time():
+    return round(time.time() * 1000)
 
 ### --- LOGIN AND REGISTRATION --- ###
 
@@ -180,12 +184,7 @@ def ReceiveScanLogFromProbe(sid, data):
 @sio.event
 async def RequestScanLogs(sid):
     record = fetchAllFromDB("SELECT * FROM public.\"Scan_Results\"")
-    #for x in range(len(record)):
-    #    record[x]['date'] = record[x]['date'].strftime("%m/%d/%Y, %H:%M:%S")
     await sio.emit('ReceiveScanLogs', record, sid)
-
-def current_milli_time():
-    return round(time.time() * 1000)
 
 # Goes through every registered discovery job and tries to start ones
 # whose time to start has passed and isn't an inactive job.
