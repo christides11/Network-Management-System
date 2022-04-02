@@ -8,6 +8,7 @@
     "@emotion/styled": "^11.8.1",
     "@material-ui/icons": "^4.11.2",
     "@mui/icons-material": "^5.5.1",
+    "@mui/lab": "^5.0.0-alpha.75",
     "@mui/material": "^5.4.3",
     "@mui/styles": "^5.4.2",
     "@pmmmwh/react-refresh-webpack-plugin": "^0.5.3",

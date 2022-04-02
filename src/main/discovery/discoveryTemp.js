@@ -4,7 +4,8 @@ import { useNavigate } from 'react-router-dom';
 import moment from 'moment';
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
-import { InputLabel, Select, MenuItem, Checkbox, FormControlLabel, FormGroup } from '@mui/material';
+import { InputLabel, Select, MenuItem, Checkbox, FormControlLabel, FormGroup, TextField, Stack } from '@mui/material';
+import { TimePicker } from '@mui/lab';
 
 function DiscoveryPage({socket}){
     let navigate = useNavigate();
@@ -33,9 +34,10 @@ function DiscoveryPage({socket}){
 
     const [immediateScan, setImmediateScan] = useState(false);
     const [firstScanTime, setFirstScanTime] = useState(new Date());
+    
     const [repeatType, setRepeatType] = useState(0);
-
-    const timeSheet = [moment.duration(0, 'hours'), moment.duration(1, 'hours'), moment.duration(1, 'days'), moment.duration(1, 'week')];
+    const [repeatValue, setRepeatValue] = useState(moment());
+    //const timeSheet = [moment.duration(0, 'hours'), moment.duration(1, 'hours'), moment.duration(1, 'days'), moment.duration(1, 'week')];
     
     const handleRegisterScanResult = useCallback((data) => {
         console.log(data.result);
@@ -79,6 +81,8 @@ function DiscoveryPage({socket}){
 
     function RegisterScan(){
         console.log("REGISTER SCAN")
+        console.log(repeatValue.minutes());
+        return;
         socket.emit('RegisterDiscoveryScan', 
         {
                 "network": 1,
@@ -97,8 +101,10 @@ function DiscoveryPage({socket}){
                 "wmiRetries": wmiRetries,
                 "hopCount": hopCount,
                 "discoveryTimeout": discoveryTimeout,
-                "nextDiscoveryTime": immediateScan ? moment().toDate().valueOf() : moment(firstScanTime).toDate().valueOf(),
-                "discoveryInterval": timeSheet[repeatType].valueOf()
+                "scanfrequencytype": repeatType,
+                "scanfrequencyvalue": 0
+                //"nextDiscoveryTime": immediateScan ? moment().toDate().valueOf() : moment(firstScanTime).toDate().valueOf(),
+                //"discoveryInterval": timeSheet[repeatType].valueOf()
         })
     }
 
@@ -180,9 +186,20 @@ function DiscoveryPage({socket}){
                     <MenuItem value={0}>Once</MenuItem>
                     <MenuItem value={1}>Hourly</MenuItem>
                     <MenuItem value={2}>Daily</MenuItem>
-                    <MenuItem value={3}>Weekly</MenuItem>
+                    <MenuItem value={3}>Custom</MenuItem>
                 </Select>
             </FormGroup>
+            {repeatType == 1 &&
+                        <TimePicker 
+                        ampm={false}
+                        views={['minutes','seconds']}
+                        inputFormat="mm:ss" 
+                        mask="__:__" 
+                        label="time" 
+                        value={repeatValue}
+                        onChange={(newValue) => { setRepeatValue(newValue);}} 
+                        renderInput={(params) => <TextField {...params}/>}/>
+            }
             <br/>
             <br/>
             <button onClick={RegisterScan}>Register Scan</button>

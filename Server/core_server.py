@@ -184,6 +184,8 @@ async def RequestScanLogs(sid):
 # Goes through every registered discovery job and tries to start ones
 # whose time to start has passed and isn't an inactive job.
 def TryStartDiscoveryJob():
+    #TODO
+    return
     record = fetchAllFromDB( "SELECT * FROM public.\"scanParameters\" WHERE \"nextScanTime\" < {} AND \"nextScanTime\" != 0".format(current_milli_time()) )
     for x in range(len(record)):
         if record[x]["probeID"] not in probes:
