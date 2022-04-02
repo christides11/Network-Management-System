@@ -83,10 +83,10 @@ def ScannerTask(scanParams, startAddr, endAddr, wmiCreds, snmpCreds):
     for p in pool:
         p.start()
 
-    for x in range(start[0], end[0]+1):
-        for y in range(start[1], end[1]+1):
-            for z in range(start[2], end[2]+1):
-                for w in range(start[3], end[3]+1):
+    for x in range(start[0], end[0]+1 if end[0]>=start[0] else 255):
+        for y in range(start[1], end[1]+1 if end[1] >= start[1] else 255):
+            for z in range(start[2], end[2]+1 if end[2] >= start[2] else 255):
+                for w in range(start[3], end[3]+1 if end[3] >= start[3] else 255):
                     jobs.put('{}.{}.{}.{}'.format(x, y, z, w))
     
     for p in pool:
@@ -112,8 +112,6 @@ async def connect():
 @sio.event
 async def Probe_RunDiscoverScan(data):
     print('Probe received discovery job, starting...')
-    #print(data["wmiCreds"])
-    #print(data["snmpCreds"])
     result = []
     match data['params']['scanType']:
         case 0:

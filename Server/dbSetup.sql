@@ -39,8 +39,8 @@ CREATE TABLE "scanParameters" (
   "wmiRetries" int,
   "hopCount" int,
   "discoveryTimeout" int,
-  "nextScanTime" bigint,
-  "timeBetweenScans" bigint,
+  "nextScanTime" int,
+  "timeBetweenScans" int,
   "probeID" int,
   "scanType" int,
   "ipStartRange" varchar[],
@@ -66,9 +66,24 @@ CREATE TABLE "WMI_Credentials" (
 
 CREATE TABLE "Scan_Results" (
   "scanID" int,
+  "id" SERIAL NOT NULL,
   "date" timestamp,
-  "minutesSpent" int,
-  "devicesFound" json
+  "devicesFound" jsonb,
+  PRIMARY KEY ("scanID", "id")
+);
+
+CREATE TABLE "sensor" (
+  "id" SERIAL PRIMARY KEY NOT NULL,
+  "name" varchar
+);
+
+CREATE TABLE "sensordevicedata" (
+  "deviceid" int,
+  "sensorid" int,
+  "id" SERIAL NOT NULL,
+  "nickname" varchar,
+  "data" jsonb,
+  PRIMARY KEY ("deviceid", "sensorid", "id")
 );
 
 ALTER TABLE "network" ADD FOREIGN KEY ("snmpCredentials") REFERENCES "SNMP_Credentials" ("id");
@@ -87,6 +102,11 @@ ALTER TABLE "scanParameters" ADD FOREIGN KEY ("probeID") REFERENCES "device" ("i
 
 ALTER TABLE "scanParameters" ADD FOREIGN KEY ("networkID") REFERENCES "network" ("id");
 
+ALTER TABLE "sensordevicedata" ADD FOREIGN KEY ("sensorid") REFERENCES "sensor" ("id");
+
+ALTER TABLE "sensordevicedata" ADD FOREIGN KEY ("deviceid") REFERENCES "device" ("id");
+
 ALTER TABLE "Scan_Results" ADD FOREIGN KEY ("scanID") REFERENCES "scanParameters" ("id");
 
 ALTER TABLE "user" ADD FOREIGN KEY ("networkID") REFERENCES "network" ("id");
+

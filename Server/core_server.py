@@ -163,15 +163,16 @@ async def RegisterDiscoveryScan(sid, data):
 @sio.event
 def ReceiveScanLogFromProbe(sid, data):
     print('SERVER:')
-    for x in range(len(data["devicesFound"])):
-        print(data["devicesFound"][x])
+    print(data)
+    #for x in range(len(data["devicesFound"])):
+    #    print(data["devicesFound"][x])
     # No devices found.
     if len(data["devicesFound"]) == 0:
         #TODO: find way to insert empty array.
         print("NO DEVICES FOUND!")
         return
     cursor = dbConn.cursor()
-    cursor.execute('INSERT INTO public.\"Scan_Results\" VALUES ({}, \'{}\', {}, \'{}\')'.format(data["discoveryID"], datetime.now().strftime("%m/%d/%Y, %H:%M:%S"), 5, json.dumps(data["devicesFound"]) ))
+    cursor.execute('INSERT INTO public.\"Scan_Results\" VALUES ({}, DEFAULT, \'{}\', \'{}\')'.format(data["discoveryID"], datetime.now().strftime("%m/%d/%Y, %H:%M:%S"), json.dumps(data["devicesFound"]) ))
     dbConn.commit()
     cursor.close()
 
@@ -195,7 +196,6 @@ def TryStartDiscoveryJob():
         # Send command to probe to start the scan with given parameters.
         loop = asyncio.get_event_loop()
         loop.create_task(sio.emit('Probe_RunDiscoverScan', {"params": record[x], "snmpCreds": snmpCreds, "wmiCreds": wmiCreds }, probes[record[x]["probeID"]]['sid']))
-        print("Discovery Job", record[x]['name'], "starting...")
         # Update the next scan time for the scan.
         cursor = dbConn.cursor()
         # One off scan.
