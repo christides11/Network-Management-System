@@ -84,7 +84,7 @@ def fetchOneFromDB(action):
     record = cursor.fetchone()
     column_names = [desc[0] for desc in cursor.description]
     cursor.close()
-    result = {}
+    result = None
     if record is None:
         return record
     for row in record:
@@ -159,7 +159,7 @@ async def RegisterDiscoveryScan(sid, data):
     finally:
         cursor.close()
         print("Sending result: ", result)
-        await sio.emit('Frontend_RegisterDiscoveryScanResult', {'result': result})
+        await sio.emit('Frontend_RegisterDiscoveryScanResult', {'result': result}, sid)
 
 # Receive a scan log from a probe then add it to the database.
 @sio.event
@@ -182,7 +182,7 @@ async def RequestScanLogs(sid):
     record = fetchAllFromDB("SELECT * FROM public.\"Scan_Results\"")
     #for x in range(len(record)):
     #    record[x]['date'] = record[x]['date'].strftime("%m/%d/%Y, %H:%M:%S")
-    await sio.emit('ReceiveScanLogs', record)
+    await sio.emit('ReceiveScanLogs', record, sid)
 
 def current_milli_time():
     return round(time.time() * 1000)
@@ -232,7 +232,7 @@ async def RequestSNMPCredentials(sid):
     cursor.execute("SELECT * FROM public.\"SNMP_Credentials\"")
     record = cursor.fetchall()
     cursor.close()
-    await sio.emit('ReceiveSNMPCredentials', record)
+    await sio.emit('ReceiveSNMPCredentials', record, sid)
 
 @sio.event
 async def RequestSNMPCredential(sid, data):
@@ -240,14 +240,14 @@ async def RequestSNMPCredential(sid, data):
     cursor.execute("SELECT * FROM public.\"SNMP_Credentials\" WHERE \"id\"={}".format(data['credentialID']))
     record = cursor.fetchone()
     cursor.close()
-    await sio.emit('ReceiveSNMPCredential', record)
+    await sio.emit('ReceiveSNMPCredential', record, sid)
 
 @sio.event
 async def RequestWMICredentials(sid):
     cursor = dbConn.cursor()
     cursor.execute("SELECT * FROM public.\"WMI_Credentials\"")
     record = cursor.fetchall()
-    await sio.emit('ReceiveWMICredentials', record)
+    await sio.emit('ReceiveWMICredentials', record, sid)
 
 @sio.event
 async def RequestSNMPCredential(sid, data):
@@ -255,7 +255,7 @@ async def RequestSNMPCredential(sid, data):
     cursor.execute("SELECT * FROM public.\"WMI_Credentials\" WHERE \"id\"={}".format(data['credentialID']))
     record = cursor.fetchone()
     cursor.close()
-    await sio.emit('ReceiveWMICredential', record)
+    await sio.emit('ReceiveWMICredential', record, sid)
 
 
 ### --- DEVICES --- ###
@@ -270,19 +270,25 @@ async def RequestProbeList(sid):
     for x in range(len(record)):
         li.append({"id": record[x][0], "name": record[x][1], "networkID": record[x][6]})
     cursor.close()
-    await sio.emit('ReceiveProbeList', li)
+    await sio.emit('ReceiveProbeList', li, sid)
 
 # returns a list of all devices attached to the given probe.
 @sio.event
 async def RequestDeviceListFromProbe(sid, probeID):
     result = fetchAllFromDB("SELECT * FROM public.device WHERE \"parent\" = {}".format(probeID))
-    await sio.emit('ReceiveDeviceList', {"devices": result, "probeID": probeID})
+    await sio.emit('ReceiveDeviceList', {"devices": result, "probeID": probeID}, sid)
 
 # returns a list of all devices in the database.
 @sio.event
 async def RequestDeviceList(sid):
     result = fetchAllFromDB("SELECT * FROM public.device")
-    await sio.emit('ReceiveDeviceList', result)
+    await sio.emit('ReceiveDeviceList', result, sid)
+
+# Returns a device with the given id.
+@sio.event
+async def RequestDevice(sid, deviceId):
+    result = fetchOneFromDB("SELECT * FROM public.device WHERE id = {}".format(deviceId))
+    await sio.emit('ReceiveDevice', result, sid)
 
 # Register the given device to the database for tracking.
 @sio.event
