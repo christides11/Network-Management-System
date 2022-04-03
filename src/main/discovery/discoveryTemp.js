@@ -81,8 +81,14 @@ function DiscoveryPage({socket}){
 
     function RegisterScan(){
         console.log("REGISTER SCAN")
-        console.log(repeatValue.minutes());
-        return;
+        let val = moment();
+         // Only care about minutes.
+        if(repeatType == 1){
+            val.set('minutes', repeatValue.minutes()).set('second', 0);//.duration(repeatValue.minutes(), "minutes");//repeatValue.minutes();
+        }else if(repeatType == 2){ // Only care about hours & minutes.
+            val.set('hour', repeatValue.hours()).set('minute', repeatValue.minutes()).set('second', 0);
+        }
+        console.log(val.utc().format())
         socket.emit('RegisterDiscoveryScan', 
         {
                 "network": 1,
@@ -102,9 +108,7 @@ function DiscoveryPage({socket}){
                 "hopCount": hopCount,
                 "discoveryTimeout": discoveryTimeout,
                 "scanfrequencytype": repeatType,
-                "scanfrequencyvalue": 0
-                //"nextDiscoveryTime": immediateScan ? moment().toDate().valueOf() : moment(firstScanTime).toDate().valueOf(),
-                //"discoveryInterval": timeSheet[repeatType].valueOf()
+                "nextscantime": val.utc().valueOf()
         })
     }
 
@@ -192,8 +196,19 @@ function DiscoveryPage({socket}){
             {repeatType == 1 &&
                         <TimePicker 
                         ampm={false}
-                        views={['minutes','seconds']}
-                        inputFormat="mm:ss" 
+                        views={['minutes']}
+                        inputFormat="mm" 
+                        mask="__" 
+                        label="time" 
+                        value={repeatValue}
+                        onChange={(newValue) => { setRepeatValue(newValue);}} 
+                        renderInput={(params) => <TextField {...params}/>}/>
+            }
+            {repeatType == 2 &&
+                        <TimePicker 
+                        ampm={true}
+                        views={['hours','minutes']}
+                        inputFormat="HH:mm" 
                         mask="__:__" 
                         label="time" 
                         value={repeatValue}

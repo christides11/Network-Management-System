@@ -41,7 +41,7 @@ def isDeviceValid(job_q, scanParams, wmiCreds, snmpCreds, results_q):
                 cmdGen = cmdgen.CommandGenerator()
                 errorIndication, errorStatus, errorIndex, varBinds = cmdGen.getCmd(
                     auth,
-                    cmdgen.UdpTransportTarget((ip, 161), timeout=scanParams['snmpTimeout']/1000.0, retries=scanParams['snmpRetries']),
+                    cmdgen.UdpTransportTarget((ip, 161)), #timeout=scanParams['snmpTimeout']/1000.0, retries=scanParams['snmpRetries']
                     cmdgen.MibVariable(SYSNAME),
                     lookupMib=False,
                 )
@@ -63,6 +63,12 @@ def isDeviceValid(job_q, scanParams, wmiCreds, snmpCreds, results_q):
             # One of the checks failed.
             pass
 
+def getips(start, end):
+    import socket, struct
+    start = struct.unpack('>I', socket.inet_aton(start))[0]
+    end = struct.unpack('>I', socket.inet_aton(end))[0]
+    return [socket.inet_ntoa(struct.pack('>I', i)) for i in range(start, end)]
+
 # Finds devices simultaneously using multithreading. Returns the list of IPs found.
 def ScannerTask(scanParams, startAddr, endAddr, wmiCreds, snmpCreds):
     start = startAddr.split(".")
@@ -83,12 +89,10 @@ def ScannerTask(scanParams, startAddr, endAddr, wmiCreds, snmpCreds):
     for p in pool:
         p.start()
 
-    for x in range(start[0], end[0]+1 if end[0]>=start[0] else 255):
-        for y in range(start[1], end[1]+1 if end[1] >= start[1] else 255):
-            for z in range(start[2], end[2]+1 if end[2] >= start[2] else 255):
-                for w in range(start[3], end[3]+1 if end[3] >= start[3] else 255):
-                    jobs.put('{}.{}.{}.{}'.format(x, y, z, w))
-    
+    ips = getips(startAddr, endAddr)
+    for x in ips:
+        jobs.put(x)
+
     for p in pool:
         jobs.put(None)
 

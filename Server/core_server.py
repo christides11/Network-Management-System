@@ -8,7 +8,7 @@ import sys
 sys.path.append('../Probe/')
 import subprocess
 import asyncio
-from datetime import datetime
+from datetime import datetime, timedelta, timezone
 from aiorun import run
 from getmac import get_mac_address
 import time
@@ -145,8 +145,9 @@ async def RegisterDiscoveryScan(sid, data):
     cursor = dbConn.cursor()
     result = False
     try:
-        st = 'INSERT INTO public."scanParameters" VALUES (DEFAULT, {}, \'{}\', {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, ARRAY {}, ARRAY {}, ARRAY {}, ARRAY {}, ARRAY {})'.format(data['network'], data['discoveryName'], data['icmpRespondersOnly'], data['snmpTimeout'], data['scanTimeout'], data['snmpRetries'], data['wmiRetries'], 
-            data['hopCount'], data['discoveryTimeout'], data['nextDiscoveryTime'], data['discoveryInterval'], data['probeID'], data['scanType'], data['ipStartRanges'],
+        dt = datetime.fromtimestamp(data['nextscantime'] / 1000.0, tz = timezone.utc)
+        st = 'INSERT INTO public."scanParameters" VALUES (DEFAULT, {}, \'{}\', {}, {}, {}, {}, {}, {}, {}, {}, \'{}\', {}, {}, ARRAY {}, ARRAY {}, ARRAY {}, ARRAY {}, ARRAY {})'.format(data['network'], data['discoveryName'], data['icmpRespondersOnly'], data['snmpTimeout'], data['scanTimeout'], data['snmpRetries'], data['wmiRetries'], 
+            data['hopCount'], data['discoveryTimeout'], data['scanfrequencytype'], dt, data['probeID'], data['scanType'], data['ipStartRanges'],
             data['ipEndRanges'], data['subnets'], data['snmpCredentials'], data['wmiCredentials'])
         cursor.execute(st)
         dbConn.commit()
@@ -184,9 +185,11 @@ async def RequestScanLogs(sid):
 # Goes through every registered discovery job and tries to start ones
 # whose time to start has passed and isn't an inactive job.
 def TryStartDiscoveryJob():
-    #TODO
-    return
-    record = fetchAllFromDB( "SELECT * FROM public.\"scanParameters\" WHERE \"nextScanTime\" < {} AND \"nextScanTime\" != 0".format(current_milli_time()) )
+    record = []
+    now_utc = datetime.now(timezone.utc)
+    record += fetchAllFromDB("SELECT * FROM public.\"scanParameters\" WHERE \"scanfrequencytype\" = 0 AND \"nextscantime\" != NULL")
+    record += fetchAllFromDB("SELECT * FROM public.\"scanParameters\" WHERE \"scanfrequencytype\" = 1 AND \"nextscantime\" <= \'{}\'".format(now_utc))
+    #record = fetchAllFromDB( "SELECT * FROM public.\"scanParameters\" WHERE \"nextScanTime\" < {} AND \"nextScanTime\" != 0".format(current_milli_time()) )
     for x in range(len(record)):
         if record[x]["probeID"] not in probes:
             print("Probe", record[x][12], "is not currently awake, or does not exist.")
@@ -201,13 +204,18 @@ def TryStartDiscoveryJob():
         # Update the next scan time for the scan.
         cursor = dbConn.cursor()
         # One off scan.
-        if record[x]["timeBetweenScans"] == 0:
-            cursor.execute("UPDATE public.\"scanParameters\" SET \"nextScanTime\"=0 WHERE id={}".format(record[x]["id"])) #ignore this value. 1648147018069
-            dbConn.commit()
-            cursor.close()
-            continue
+        if record[x]["scanfrequencytype"] == 0:
+            cursor.execute("UPDATE public.\"scanParameters\" SET \"nextscantime\"=NULL WHERE id={}".format(record[x]["id"]))
+        elif record[x]['scanfrequencytype'] == 1: # Hourly
+            temp = datetime.fromisoformat(record[x]['nextscantime']) + timedelta(hours=1)
+            print(temp, "vs", record[x]['nextscantime'])
+            cursor.execute("UPDATE public.\"scanParameters\" SET \"nextscantime\"=\'{}\' WHERE id={}".format(temp, record[x]["id"]))
+        elif record[x]['scanfrequencytype'] == 2: # Daily
+            temp = datetime.fromisoformat(record[x]['nextscantime']) + timedelta(days=1)
+            print(temp, "vs", record[x]['nextscantime'])
+            cursor.execute("UPDATE public.\"scanParameters\" SET \"nextscantime\"=\'{}\' WHERE id={}".format(temp, record[x]["id"]))
         # Set the next scan time to current next scan time + timebetweenscans.
-        cursor.execute("UPDATE public.\"scanParameters\" SET \"nextScanTime\"={} WHERE id={}".format(record[x]["nextScanTime"] + record[x]["timeBetweenScans"], record[x]["id"]))
+        #cursor.execute("UPDATE public.\"scanParameters\" SET \"nextScanTime\"={} WHERE id={}".format(record[x]["nextScanTime"] + record[x]["timeBetweenScans"], record[x]["id"]))
         dbConn.commit()
         cursor.close()
 

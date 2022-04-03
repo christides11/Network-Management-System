@@ -40,7 +40,7 @@ CREATE TABLE "scanParameters" (
   "hopCount" int,
   "discoveryTimeout" int,
   "scanfrequencytype" int,
-  "scanfrequencyvalue" bigint,
+  "nextscantime" timestamp WITHOUT TIME ZONE,
   "probeID" int,
   "scanType" int,
   "ipStartRange" varchar[],
