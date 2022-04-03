@@ -2,6 +2,7 @@ import { Dialog, DialogTitle, FormControl, InputLabel, Modal, Select, Typography
 import { Box } from "@mui/system";
 import { useEffect } from 'react';
 import useState from 'react-usestateref';
+import SensorSettings from "../../components/sensorsettings/sensorsettings";
 
 const style = {
     position: 'absolute',
@@ -16,12 +17,12 @@ const style = {
   };
 
 function CreateSensorModal({open, handleClose, socket}){
-    const [sensorid, setSensorID, sensorIDRef] = useState(0);
+    const [sensorindex, setSensorIndex, sensorIndexRef] = useState(-1);
     const [sensorList, setSensorList, sensorListRef] = useState([]);
     const [name, setName, nameRef] = useState("");
 
     const handleSensorIDChange = (event) => {
-        setSensorID(event.target.value);
+        setSensorIndex(event.target.value);
     }
 
     const receiveSensorList = (data) => {
@@ -29,7 +30,7 @@ function CreateSensorModal({open, handleClose, socket}){
     }
 
     const localHandleClose = () => {
-        setSensorID(0);
+        setSensorIndex(0);
         setName("");
         handleClose();
     }
@@ -43,7 +44,7 @@ function CreateSensorModal({open, handleClose, socket}){
             socket.off("ReceiveSensorList", receiveSensorList)
         }
     }, [socket]);
-    
+
     return (
         <Dialog
         fullWidth={true}
@@ -65,18 +66,20 @@ function CreateSensorModal({open, handleClose, socket}){
                     <InputLabel htmlFor="sensor">Sensor</InputLabel>
                     <Select 
                     autoFocus
-                    value={sensorid}
+                    value={sensorindex}
                     onChange={handleSensorIDChange}
                     label="sensor">
-                        <MenuItem value={0}>None</MenuItem>
+                        <MenuItem value={-1}>None</MenuItem>
                         {sensorList.map((s, idx) => (
-                            <MenuItem key={s.id} value={s.id} row={s}>{s.name}</MenuItem>
+                            <MenuItem key={idx} value={idx} row={s}>{s.name}</MenuItem>
                         ))
                         }
                     </Select>
-                    {sensorid != 0 &&
+                    {sensorindex != -1 &&
                         <>
-                            <TextField id="outlined-basic" label="Outlined" variant="outlined" value={name} onChange={(event) => { setName(event.target.value); }} />
+                            <TextField id="outlined-basic" label="Sensor Name" variant="outlined" value={name} onChange={(event) => { setName(event.target.value); }} />
+                            <br/>
+                            <SensorSettings sensordata={sensorList[sensorindex]} socket={socket} />
                         </>
                     }
                 </FormControl>
