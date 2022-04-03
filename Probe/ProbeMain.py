@@ -1,4 +1,6 @@
 from asyncio.windows_events import NULL
+from glob import glob
+import inspect
 import socketio
 import sys
 import socket
@@ -18,6 +20,14 @@ sio = socketio.AsyncClient()
 socket.setdefaulttimeout(0.25)
 
 probeID = 1
+
+sensors = {}
+from sensors.SensorPing import SensorPing
+sensorPing = SensorPing()
+sensors[sensorPing.id] = sensorPing
+from sensors.SensorSNMPTraffic import SensorSNMPTraffic
+sensorSNMPTraffic = SensorSNMPTraffic()
+sensors[sensorSNMPTraffic.id] = sensorSNMPTraffic
 
 #SNMP command used for checking if a device can be queried.
 SYSNAME = '1.3.6.1.2.1.1.5.0'
