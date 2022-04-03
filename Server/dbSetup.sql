@@ -146,3 +146,7 @@ ALTER TABLE "user" ADD FOREIGN KEY ("networkID") REFERENCES "network" ("id");
 
 INSERT INTO public."network" VALUES (DEFAULT, 'default network', NULL, NULL);
 INSERT INTO public."device" VALUES (DEFAULT, 'localProbe', DEFAULT, 'localhost', '00:00:00:00:00:00', NULL);
+INSERT INTO public."sensorstatus" VALUES (1, 'Unknown');
+INSERT INTO public."sensorstatus" VALUES (2, 'Up');
+INSERT INTO public."sensorstatus" VALUES (3, 'Warning');
+INSERT INTO public."sensorstatus" VALUES (4, 'Down');
