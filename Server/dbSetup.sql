@@ -40,7 +40,7 @@ CREATE TABLE "scanParameters" (
   "hopCount" int,
   "discoveryTimeout" int,
   "scanfrequencytype" int,
-  "nextscantime" timestamp WITHOUT TIME ZONE,
+  "scanfrequencyvalue" bigint,
   "probeID" int,
   "scanType" int,
   "ipStartRange" varchar[],
@@ -74,16 +74,42 @@ CREATE TABLE "Scan_Results" (
 
 CREATE TABLE "sensor" (
   "id" SERIAL PRIMARY KEY NOT NULL,
+  "name" varchar,
+  "description" varchar
+);
+
+CREATE TABLE "sensorchannel" (
+  "sensor_id" int,
+  "id" SERIAL NOT NULL,
+  "name" varchar,
+  PRIMARY KEY ("sensor_id", "id")
+);
+
+CREATE TABLE "sensorstatus" (
+  "id" int PRIMARY KEY NOT NULL,
   "name" varchar
 );
 
-CREATE TABLE "sensordevicedata" (
-  "deviceid" int,
-  "sensorid" int,
+CREATE TABLE "devicesensor" (
+  "device_id" int,
+  "sensor_id" int,
   "id" SERIAL NOT NULL,
-  "nickname" varchar,
-  "data" jsonb,
-  PRIMARY KEY ("deviceid", "sensorid", "id")
+  "name" varchar,
+  "tags" varchar[],
+  "status" int,
+  "statusmessage" varchar,
+  "settings" jsonb,
+  PRIMARY KEY ("device_id", "sensor_id", "id")
+);
+
+CREATE TABLE "devicesensorchanneldata" (
+  "device_id" int,
+  "sensor_id" int,
+  "devicesensor_id" int,
+  "channel_id" int,
+  "collected_at" timestamp,
+  "data" int[],
+  PRIMARY KEY ("device_id", "sensor_id", "devicesensor_id", "channel_id", "collected_at")
 );
 
 ALTER TABLE "network" ADD FOREIGN KEY ("snmpCredentials") REFERENCES "SNMP_Credentials" ("id");
@@ -102,11 +128,21 @@ ALTER TABLE "scanParameters" ADD FOREIGN KEY ("probeID") REFERENCES "device" ("i
 
 ALTER TABLE "scanParameters" ADD FOREIGN KEY ("networkID") REFERENCES "network" ("id");
 
-ALTER TABLE "sensordevicedata" ADD FOREIGN KEY ("sensorid") REFERENCES "sensor" ("id");
+ALTER TABLE "devicesensor" ADD FOREIGN KEY ("sensor_id") REFERENCES "sensor" ("id");
 
-ALTER TABLE "sensordevicedata" ADD FOREIGN KEY ("deviceid") REFERENCES "device" ("id");
+ALTER TABLE "devicesensor" ADD FOREIGN KEY ("device_id") REFERENCES "device" ("id");
+
+ALTER TABLE "devicesensor" ADD FOREIGN KEY ("status") REFERENCES "sensorstatus" ("id");
+
+ALTER TABLE "sensorchannel" ADD FOREIGN KEY ("sensor_id") REFERENCES "sensor" ("id");
+
+ALTER TABLE "devicesensorchanneldata" ADD FOREIGN KEY ("device_id", "sensor_id", "devicesensor_id") REFERENCES "devicesensor" ("device_id", "sensor_id", "id");
+
+ALTER TABLE "devicesensorchanneldata" ADD FOREIGN KEY ("sensor_id", "channel_id") REFERENCES "sensorchannel" ("sensor_id", "id");
 
 ALTER TABLE "Scan_Results" ADD FOREIGN KEY ("scanID") REFERENCES "scanParameters" ("id");
 
 ALTER TABLE "user" ADD FOREIGN KEY ("networkID") REFERENCES "network" ("id");
 
+INSERT INTO public."network" VALUES (DEFAULT, 'default network', NULL, NULL);
+INSERT INTO public."device" VALUES (DEFAULT, 'localProbe', DEFAULT, 'localhost', '00:00:00:00:00:00', NULL);

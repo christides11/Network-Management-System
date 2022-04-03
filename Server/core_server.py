@@ -188,8 +188,7 @@ def TryStartDiscoveryJob():
     record = []
     now_utc = datetime.now(timezone.utc)
     record += fetchAllFromDB("SELECT * FROM public.\"scanParameters\" WHERE \"scanfrequencytype\" = 0 AND \"nextscantime\" != NULL")
-    record += fetchAllFromDB("SELECT * FROM public.\"scanParameters\" WHERE \"scanfrequencytype\" = 1 AND \"nextscantime\" <= \'{}\'".format(now_utc))
-    #record = fetchAllFromDB( "SELECT * FROM public.\"scanParameters\" WHERE \"nextScanTime\" < {} AND \"nextScanTime\" != 0".format(current_milli_time()) )
+    record += fetchAllFromDB("SELECT * FROM public.\"scanParameters\" WHERE \"scanfrequencytype\" != 0 AND \"nextscantime\" <= \'{}\'".format(now_utc))
     for x in range(len(record)):
         if record[x]["probeID"] not in probes:
             print("Probe", record[x][12], "is not currently awake, or does not exist.")
@@ -203,19 +202,14 @@ def TryStartDiscoveryJob():
         loop.create_task(sio.emit('Probe_RunDiscoverScan', {"params": record[x], "snmpCreds": snmpCreds, "wmiCreds": wmiCreds }, probes[record[x]["probeID"]]['sid']))
         # Update the next scan time for the scan.
         cursor = dbConn.cursor()
-        # One off scan.
-        if record[x]["scanfrequencytype"] == 0:
+        if record[x]["scanfrequencytype"] == 0: # One off scan.
             cursor.execute("UPDATE public.\"scanParameters\" SET \"nextscantime\"=NULL WHERE id={}".format(record[x]["id"]))
         elif record[x]['scanfrequencytype'] == 1: # Hourly
             temp = datetime.fromisoformat(record[x]['nextscantime']) + timedelta(hours=1)
-            print(temp, "vs", record[x]['nextscantime'])
             cursor.execute("UPDATE public.\"scanParameters\" SET \"nextscantime\"=\'{}\' WHERE id={}".format(temp, record[x]["id"]))
         elif record[x]['scanfrequencytype'] == 2: # Daily
             temp = datetime.fromisoformat(record[x]['nextscantime']) + timedelta(days=1)
-            print(temp, "vs", record[x]['nextscantime'])
             cursor.execute("UPDATE public.\"scanParameters\" SET \"nextscantime\"=\'{}\' WHERE id={}".format(temp, record[x]["id"]))
-        # Set the next scan time to current next scan time + timebetweenscans.
-        #cursor.execute("UPDATE public.\"scanParameters\" SET \"nextScanTime\"={} WHERE id={}".format(record[x]["nextScanTime"] + record[x]["timeBetweenScans"], record[x]["id"]))
         dbConn.commit()
         cursor.close()
 

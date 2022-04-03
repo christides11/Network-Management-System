@@ -16,6 +16,7 @@ import DiscoveryJobsPage from '../main/discoveryjobs/discoveryjobs';
 import DiscoveryLog from '../main/discoverylog/discoverylog';
 import { LocalizationProvider } from '@mui/lab';
 import AdapterMoment from '@mui/lab/AdapterMoment';
+import SensorPage from '../main/sensor/sensor';
 
 export default function App(){
 
@@ -41,6 +42,7 @@ export default function App(){
                 <Route path="/summary" element={<SummaryPage socket={socket} />} />
                 <Route path="/devices" element={<DevicesPage socket={socket} />} />
                 <Route path="/devices/:deviceId" element={<DevicePage />} />
+                <Route path="/devices/:deviceId/sensor/:sensorId/:id" element={<SensorPage />} />
                 <Route path="/discovery" element={ <LocalizationProvider dateAdapter={AdapterMoment}> <DiscoveryPage socket={socket} /> </LocalizationProvider>} />
                 <Route path="/discoveryjobs" element={<DiscoveryJobsPage socket={socket} />} />
                 <Route path="/discoverylog" element={<DiscoveryLog socket={socket} />} />
