@@ -150,3 +150,5 @@ INSERT INTO public."sensorstatus" VALUES (1, 'Unknown');
 INSERT INTO public."sensorstatus" VALUES (2, 'Up');
 INSERT INTO public."sensorstatus" VALUES (3, 'Warning');
 INSERT INTO public."sensorstatus" VALUES (4, 'Down');
+INSERT INTO public."sensor" VALUES (1, 'Ping', 'Sends an ICMP request from the probe to the device to monitor its availability.');
+INSERT INTO public."sensor" VALUES (2, 'SNMP Traffic', 'Monitors network traffic on a device using SNMP.');

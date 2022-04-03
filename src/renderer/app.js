@@ -41,8 +41,8 @@ export default function App(){
                 <Route path='/home' exact element={<Home />} />
                 <Route path="/summary" element={<SummaryPage socket={socket} />} />
                 <Route path="/devices" element={<DevicesPage socket={socket} />} />
-                <Route path="/devices/:deviceId" element={<DevicePage />} />
-                <Route path="/devices/:deviceId/sensor/:sensorId/:id" element={<SensorPage />} />
+                <Route path="/devices/:deviceId" element={<DevicePage socket={socket} />} />
+                <Route path="/devices/:deviceId/sensor/:sensorId/:id" element={<SensorPage socket={socket} />} />
                 <Route path="/discovery" element={ <LocalizationProvider dateAdapter={AdapterMoment}> <DiscoveryPage socket={socket} /> </LocalizationProvider>} />
                 <Route path="/discoveryjobs" element={<DiscoveryJobsPage socket={socket} />} />
                 <Route path="/discoverylog" element={<DiscoveryLog socket={socket} />} />

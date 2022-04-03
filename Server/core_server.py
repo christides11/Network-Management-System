@@ -262,6 +262,19 @@ async def RequestWMICredential(sid, credentialId):
     cursor.close()
     await sio.emit('ReceiveWMICredential', record, sid)
 
+### --- SENSORS --- ###
+
+# returns a list of all sensors in the db.
+@sio.event
+async def RequestSensorList(sid):
+    results = fetchAllFromDB("SELECT * FROM public.sensor")
+    await sio.emit('ReceiveSensorList', results, sid)
+
+# returns the sensor with the given id.
+@sio.event
+async def RequestSensor(sid, sensorID):
+    result = fetchOneFromDB("SELECT * FROM public.sensor WHERE \"id\"={}".format(sensorID))
+    await sio.emit('ReceiveSensor', result, sid)
 
 ### --- DEVICES --- ###
 

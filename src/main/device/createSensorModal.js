@@ -1,5 +1,6 @@
-import { Dialog, DialogTitle, FormControl, Modal, Typography } from "@mui/material";
+import { Dialog, DialogTitle, FormControl, InputLabel, Modal, Select, Typography, MenuItem, TextField } from "@mui/material";
 import { Box } from "@mui/system";
+import { useEffect } from 'react';
 import useState from 'react-usestateref';
 
 const style = {
@@ -14,14 +15,41 @@ const style = {
     p: 4,
   };
 
-function CreateSensorModal({open, handleClose}){
+function CreateSensorModal({open, handleClose, socket}){
+    const [sensorid, setSensorID, sensorIDRef] = useState(0);
+    const [sensorList, setSensorList, sensorListRef] = useState([]);
+    const [name, setName, nameRef] = useState("");
 
+    const handleSensorIDChange = (event) => {
+        setSensorID(event.target.value);
+    }
+
+    const receiveSensorList = (data) => {
+        setSensorList(data);
+    }
+
+    const localHandleClose = () => {
+        setSensorID(0);
+        setName("");
+        handleClose();
+    }
+
+    useEffect(() => {
+        socket.on("ReceiveSensorList", receiveSensorList);
+
+        if(sensorListRef.current.length == 0) socket.emit("RequestSensorList");
+
+        return () => {
+            socket.off("ReceiveSensorList", receiveSensorList)
+        }
+    }, [socket]);
+    
     return (
         <Dialog
         fullWidth={true}
         maxWidth={'sm'}
         open={open}
-        onClose={handleClose}>
+        onClose={localHandleClose}>
             <DialogTitle>Add Sensor</DialogTitle>
             <Box
             noValidate
@@ -34,7 +62,23 @@ function CreateSensorModal({open, handleClose}){
               }}
             >
                 <FormControl sx={{ mt: 2, minWidth: 120 }}>
-                    
+                    <InputLabel htmlFor="sensor">Sensor</InputLabel>
+                    <Select 
+                    autoFocus
+                    value={sensorid}
+                    onChange={handleSensorIDChange}
+                    label="sensor">
+                        <MenuItem value={0}>None</MenuItem>
+                        {sensorList.map((s, idx) => (
+                            <MenuItem key={s.id} value={s.id} row={s}>{s.name}</MenuItem>
+                        ))
+                        }
+                    </Select>
+                    {sensorid != 0 &&
+                        <>
+                            <TextField id="outlined-basic" label="Outlined" variant="outlined" value={name} onChange={(event) => { setName(event.target.value); }} />
+                        </>
+                    }
                 </FormControl>
             </Box>
         </Dialog>

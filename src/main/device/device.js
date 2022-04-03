@@ -7,7 +7,7 @@ import useState from 'react-usestateref';
 import { socket } from '../../api/socket';
 import CreateSensorModal from './createSensorModal';
 
-function SensorsTable(){
+function SensorsTable({socket}){
     const [anchorEl, setAnchorEl] = React.useState(null);
     const [addingDevice, setAddingDevice, addingDeviceRef] = useState(false);
     const open = Boolean(anchorEl);
@@ -56,12 +56,12 @@ function SensorsTable(){
                 </TableHead>
             </Table>
         </TableContainer>
-        <CreateSensorModal open={addingDevice} handleClose={handleCloseAddSensor} />
+        <CreateSensorModal open={addingDevice} handleClose={handleCloseAddSensor} socket={socket} />
         </>
     );
 }
 
-function DevicePage(){
+function DevicePage({socket}){
     let params = useParams();
     const [device, setDevice, deviceRef] = useState(null);
 
@@ -90,7 +90,7 @@ function DevicePage(){
                 <h2>{device.ipAddress}</h2>
 
                 <h2>Sensors</h2>
-                <SensorsTable />
+                <SensorsTable socket={socket} />
                 </>
             }
         </div>
