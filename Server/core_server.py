@@ -12,6 +12,7 @@ from datetime import datetime, timedelta, timezone
 from aiorun import run
 from getmac import get_mac_address
 
+network = 1
 localProbeID = 1
 hostProbe = NULL
 dbConn = NULL
@@ -133,8 +134,8 @@ async def RequestScanLogs(sid):
 def TryStartDiscoveryJob():
     record = []
     now_utc = datetime.now(timezone.utc)
-    record += helpers.fetchAllFromDB("SELECT * FROM public.\"scanParameters\" WHERE \"scanfrequencytype\" = 0 AND \"nextscantime\" != NULL")
-    record += helpers.fetchAllFromDB("SELECT * FROM public.\"scanParameters\" WHERE \"scanfrequencytype\" != 0 AND \"nextscantime\" <= \'{}\'".format(now_utc))
+    record += helpers.fetchAllFromDB("SELECT * FROM public.\"scanParameters\" WHERE \"scanfrequencytype\" = 0 AND \"nextscantime\" != NULL AND \"networkID\"={}".format(network))
+    record += helpers.fetchAllFromDB("SELECT * FROM public.\"scanParameters\" WHERE \"scanfrequencytype\" != 0 AND \"nextscantime\" <= \'{}\' AND \"networkID\"={}".format(now_utc, network))
     for x in range(len(record)):
         if record[x]["probeID"] not in probes:
             print("Probe", record[x][12], "is not currently awake, or does not exist.")
@@ -179,23 +180,23 @@ async def RequestNetwork(sid, networkId):
 
 # Grabs various data from the database.
 def Initialize():
-    global localProbeID
+    global localProbeID, network
     cursor = dbConn.cursor()
     # Create default local network.
-    cursor.execute("SELECT * FROM public.network")
+    cursor.execute("SELECT * FROM public.network WHERE \"id\"={}".format(network))
     record = cursor.fetchall()
     if len(record) == 0:
         cursor.execute("INSERT INTO public.network(name) VALUES ('default network')")
     # Create local probe device.
-    cursor.execute("SELECT * FROM public.device WHERE \"macAddress\"=\'{}\'"
-        .format(str(get_mac_address(hostname="localhost"))))
+    cursor.execute("SELECT * FROM public.device WHERE \"macAddress\"=\'{}\' AND \"networkID\"={}"
+        .format(str(get_mac_address(hostname="localhost")), network))
     record = cursor.fetchall()
     if len(record) == 0:
-        cursor.execute('INSERT INTO public.device("name", "dateAdded", "ipAddress", "macAddress", "networkID") VALUES (\'{}\', \'{}\', \'{}\', \'{}\', 1)'
-            .format('local probe', datetime.now().strftime("%m/%d/%Y, %H:%M:%S"), 'localhost', str(get_mac_address(hostname="localhost"))) )    
+        cursor.execute('INSERT INTO public.device("name", "dateAdded", "ipAddress", "macAddress", "networkID") VALUES (\'{}\', \'{}\', \'{}\', \'{}\', {})'
+            .format('local probe', datetime.now().strftime("%m/%d/%Y, %H:%M:%S"), 'localhost', str(get_mac_address(hostname="localhost")), network) )    
     dbConn.commit()
     # Get list of probes.
-    cursor.execute("SELECT * FROM public.device WHERE \"parent\" IS NULL")
+    cursor.execute("SELECT * FROM public.device WHERE \"parent\" IS NULL AND \"networkID\"={}".format(network))
     record = cursor.fetchall()
     for item in record:
         probes[int(item[0])] = { "nickname": item[1], "ip": item[3], "mac": item[4], "network": item[6], "sid": -1 }
@@ -224,7 +225,7 @@ async def main(shouldHostProbe, serverIP, serverPort):
     await runner.shutdown()
 
 # example of arguments.
-# core_server.py HOST_PROBE?:boolean SERVER_IP?:string SERVER_PORT?:string
+# core_server.py HOST_PROBE?:boolean NETWORK?:int SERVER_IP?:string SERVER_PORT?:string
 if __name__ == '__main__':
     shouldHostProbe = False
     serverIP = 'localhost'
@@ -233,8 +234,10 @@ if __name__ == '__main__':
         if sys.argv[1].lower() == 'true':
             shouldHostProbe = True
     if len(sys.argv) > 2:
-        serverIP = str(sys.argv[2])
+        network = int(sys.argv[2])
     if len(sys.argv) > 3:
-        serverPort = int(sys.argv[3])
+        serverIP = str(sys.argv[3])
+    if len(sys.argv) > 4:
+        serverPort = int(sys.argv[4])
     run(main(shouldHostProbe, serverIP, serverPort))
     dbConn.close()
