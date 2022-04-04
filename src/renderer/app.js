@@ -38,7 +38,6 @@ export default function App(){
             <Navbar />
             <Routes>
                 <Route path="/" element={<LoginPage socket={socket} sessionID={sessionID} setSessionID={setSessionID} />} />
-                <Route path='/home' exact element={<Home />} />
                 <Route path="/summary" element={<SummaryPage socket={socket} />} />
                 <Route path="/devices" element={<DevicesPage socket={socket} />} />
                 <Route path="/devices/:deviceId" element={<DevicePage socket={socket} />} />

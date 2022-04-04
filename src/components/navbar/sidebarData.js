@@ -6,7 +6,7 @@ import * as FiIcons from 'react-icons/fi';
 export const SidebarData = [
     {
         title: 'Home',
-        path: '/home',
+        path: '/summary',
         icon: <AiIcons.AiFillHome />,
         cName: 'navText'
     },
@@ -14,12 +14,6 @@ export const SidebarData = [
         title: 'Devices',
         path: '/devices',
         icon: <FiIcons.FiMonitor />,
-        cName: 'navText'
-    },
-    {
-        title: 'Event Log',
-        path: '/eventlog',
-        icon: <BiIcons.BiNotepad />,
         cName: 'navText'
     },
     {
