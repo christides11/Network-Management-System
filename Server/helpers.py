@@ -1,7 +1,6 @@
 from datetime import datetime
 import time
-
-dbConn = 0
+from __main__ import dbConn
 
 ### --- HELPER FUNCTIONS --- ###
 def create_record(obj, fields):
