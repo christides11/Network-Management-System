@@ -33,6 +33,7 @@ import helpers
 from devices import * 
 from credentials import *
 from sensors import *
+from discovery import *
 
 @sio.event
 async def connect(sid, environ):
@@ -79,55 +80,6 @@ def VerifySession(sessionID):
     return True if sessionID in currentSessions else False
 
 ### --- DISCOVERY SCANNING --- ###
-
-# Sends a list of all discovery scans currently registered in the database.
-@sio.event
-async def RequestDiscoveryScanList(sid):
-    record = helpers.fetchAllFromDB("SELECT * FROM public.\"scanParameters\"")
-    await sio.emit('ReceiveDiscoveryScanList', record, sid)
-
-# Add a discovery scan to the database.
-@sio.event
-async def RegisterDiscoveryScan(sid, data):
-    cursor = dbConn.cursor()
-    result = False
-    try:
-        dt = datetime.fromtimestamp(data['nextscantime'] / 1000.0, tz = timezone.utc)
-        st = 'INSERT INTO public."scanParameters" VALUES (DEFAULT, {}, \'{}\', {}, {}, {}, {}, {}, {}, {}, {}, \'{}\', {}, {}, ARRAY {}, ARRAY {}, ARRAY {}, ARRAY {}, ARRAY {})'.format(data['network'], data['discoveryName'], data['icmpRespondersOnly'], data['snmpTimeout'], data['scanTimeout'], data['snmpRetries'], data['wmiRetries'], 
-            data['hopCount'], data['discoveryTimeout'], data['scanfrequencytype'], dt, data['probeID'], data['scanType'], data['ipStartRanges'],
-            data['ipEndRanges'], data['subnets'], data['snmpCredentials'], data['wmiCredentials'])
-        cursor.execute(st)
-        dbConn.commit()
-        result = True
-    except Exception as e:
-        print("Error registering scan {}".format(data['discoveryName']))
-        print(e)
-    finally:
-        cursor.close()
-        print("Sending result: ", result)
-        await sio.emit('Frontend_RegisterDiscoveryScanResult', {'result': result}, sid)
-
-# Receive a scan log from a probe then add it to the database.
-@sio.event
-def ReceiveScanLogFromProbe(sid, data):
-    print('SERVER:')
-    print(data)
-    #for x in range(len(data["devicesFound"])):
-    #    print(data["devicesFound"][x])
-    # No devices found.
-    if len(data["devicesFound"]) == 0:
-        #TODO: find way to insert empty array.
-        print("NO DEVICES FOUND!")
-        return
-    cursor = dbConn.cursor()
-    cursor.execute('INSERT INTO public.\"Scan_Results\" VALUES ({}, DEFAULT, \'{}\', \'{}\')'.format(data["discoveryID"], datetime.now().strftime("%m/%d/%Y, %H:%M:%S"), json.dumps(data["devicesFound"]) ))
-    dbConn.commit()
-    cursor.close()
-
-@sio.event
-async def RequestScanLogs(sid):
-    record = helpers.fetchAllFromDB("SELECT * FROM public.\"Scan_Results\"")
-    await sio.emit('ReceiveScanLogs', record, sid)
 
 # Goes through every registered discovery job and tries to start ones
 # whose time to start has passed and isn't an inactive job.
