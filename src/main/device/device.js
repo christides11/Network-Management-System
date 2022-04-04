@@ -7,10 +7,11 @@ import useState from 'react-usestateref';
 import { socket } from '../../api/socket';
 import CreateSensorModal from './createSensorModal';
 
-function SensorsTable({socket}){
+function SensorsTable({device, socket, sensorList}){
     const [anchorEl, setAnchorEl] = React.useState(null);
     const [addingDevice, setAddingDevice, addingDeviceRef] = useState(false);
     const open = Boolean(anchorEl);
+
     const handleClick = (event) => {
       setAnchorEl(event.currentTarget);
     };
@@ -21,6 +22,18 @@ function SensorsTable({socket}){
 
     const handleCloseAddSensor = () => {
         setAddingDevice(false);
+    }
+
+    function Row({row, k}){
+        return (
+            <>
+                <TableRow  sx={{ '& > *': { borderBottom: 'unset' } }}>
+                    <TableCell>
+                        {row.name}
+                    </TableCell>
+                </TableRow>
+            </>
+        )
     }
 
     return (
@@ -54,9 +67,15 @@ function SensorsTable({socket}){
                         </Menu>
                     </TableCell>
                 </TableHead>
+                <TableBody>
+                    {sensorList.map((sensor, idx) => (
+                        <Row key={idx} row={sensor} k={idx}></Row>
+                    ))
+                    }
+                </TableBody>
             </Table>
         </TableContainer>
-        <CreateSensorModal open={addingDevice} handleClose={handleCloseAddSensor} socket={socket} />
+        <CreateSensorModal open={addingDevice} device={device} handleClose={handleCloseAddSensor} socket={socket} />
         </>
     );
 }
@@ -64,18 +83,28 @@ function SensorsTable({socket}){
 function DevicePage({socket}){
     let params = useParams();
     const [device, setDevice, deviceRef] = useState(null);
+    const [sensorList, setSensorList, sensorListRef] = useState([]);
 
     const receiveDevice = useCallback((data) => {
         console.log(data);
         setDevice(data);
     });
 
+    const receiveDeviceSensors = useCallback((data) => {
+        console.log(data);
+        setSensorList(data);
+    });
+
     useEffect(() => {
         socket.on("ReceiveDevice", receiveDevice)
+        socket.on("ReceiveDeviceSensorList", receiveDeviceSensors);
 
         if(deviceRef.current == null) socket.emit("RequestDevice", params.deviceId);
+        if(sensorListRef.current.length == 0) socket.emit("RequestDeviceSensors", params.deviceId);
+
         return () => { 
             socket.off("ReceiveDevice", receiveDevice)
+            socket.off("ReceiveDeviceSensorList", receiveDeviceSensors);
         }
     }, []);
 
@@ -90,7 +119,7 @@ function DevicePage({socket}){
                 <h2>{device.ipAddress}</h2>
 
                 <h2>Sensors</h2>
-                <SensorsTable socket={socket} />
+                <SensorsTable device={device} sensorList={sensorList} socket={socket} />
                 </>
             }
         </div>

@@ -2,8 +2,6 @@ from __main__ import sio
 from __main__ import dbConn
 from __main__ import helpers
 
-### --- CREDENTIALS --- ###
-
 @sio.event
 async def RequestSNMPCredentials(sid):
     cursor = dbConn.cursor()

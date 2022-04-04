@@ -1,8 +1,7 @@
 from __main__ import sio
 from __main__ import dbConn
 from __main__ import helpers
-
-### --- SENSORS --- ###
+import json
 
 # returns a list of all sensors in the db.
 @sio.event
@@ -15,3 +14,20 @@ async def RequestSensorList(sid):
 async def RequestSensor(sid, sensorID):
     result = helpers.fetchOneFromDB("SELECT * FROM public.sensor WHERE \"id\"={}".format(sensorID))
     await sio.emit('ReceiveSensor', result, sid)
+
+@sio.event
+async def RegisterDeviceSensor(sid, data):
+    cursor = dbConn.cursor()
+    try:
+        cursor.execute("INSERT INTO public.devicesensor VALUES ({}, {}, {}, \'{}\', ARRAY {}, {}, \'{}\', \'{}\')".format(data['deviceid'], data['sensorid'], 'DEFAULT', data['settings']['name'], ['sensor'], 1, '', json.dumps(data['sensorSettings']) ))
+    except Exception as e:
+        print(e)
+        pass
+    cursor.close()
+    dbConn.commit()
+    await sio.emit('RegisterDeviceSensorResult', {"result": True}, sid)
+
+@sio.event
+async def RequestDeviceSensors(sid, deviceid):
+    result = helpers.fetchAllFromDB("SELECT * FROM public.devicesensor WHERE \"device_id\"={}".format(deviceid))
+    await sio.emit("ReceiveDeviceSensorList", result, sid)

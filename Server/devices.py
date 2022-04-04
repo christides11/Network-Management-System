@@ -3,8 +3,6 @@ from __main__ import sio
 from __main__ import dbConn
 from __main__ import helpers
 
-### --- DEVICES --- ###
-
 # returns a list of devices that are probes.
 @sio.event
 async def RequestProbeList(sid):
@@ -44,7 +42,7 @@ async def RegisterDevice(sid, data):
         if d is None:
             print("Registering device {}".format(data["deviceName"]))
             cursor = dbConn.cursor()
-            cursor.execute("INSERT INTO public.device VALUES (DEFAULT, \'{}\', \'{}\', \'{}\', {}, {}, {}, {}, {})".format(data['deviceName'], datetime.now().strftime("%m/%d/%Y, %H:%M:%S"), data['ip'], NULL, data['parentProbe'], 1, data['snmpCredential'] if data['snmpCredential'] > 0 else 'NULL', data['wmiCredential'] if data['wmiCredential'] > 0 else 'NULL' ))
+            cursor.execute("INSERT INTO public.device VALUES (DEFAULT, \'{}\', \'{}\', \'{}\', {}, {}, {}, {}, {})".format(data['deviceName'], datetime.now().strftime("%m/%d/%Y, %H:%M:%S"), data['ip'], 'NULL', data['parentProbe'], 1, data['snmpCredential'] if data['snmpCredential'] > 0 else 'NULL', data['wmiCredential'] if data['wmiCredential'] > 0 else 'NULL' ))
             cursor.close()
             dbConn.commit()
             result['result'] = True

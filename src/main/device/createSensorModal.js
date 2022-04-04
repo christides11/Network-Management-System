@@ -16,7 +16,7 @@ const style = {
     p: 4,
   };
 
-function CreateSensorModal({open, handleClose, socket}){
+function CreateSensorModal({device, open, handleClose, socket}){
     const [sensorindex, setSensorIndex, sensorIndexRef] = useState(-1);
     const [sensorList, setSensorList, sensorListRef] = useState([]);
     const [generalSettings, setGeneralSettings, generalSettingsRef] = useState({"name":""});
@@ -38,12 +38,11 @@ function CreateSensorModal({open, handleClose, socket}){
     }
 
     const localHandleClose = () => {
-        setSensorIndex(0);
         handleClose();
     }
 
     const handleCreateSensor = () => {
-        
+        socket.emit("RegisterDeviceSensor", {"deviceid": device.id, "sensorid": sensorListRef.current[sensorIndexRef.current].id, "settings": generalSettings, "sensorSettings": sensorSettings})
         localHandleClose();
     };
 

@@ -2,7 +2,6 @@ from datetime import datetime
 import time
 from __main__ import dbConn
 
-### --- HELPER FUNCTIONS --- ###
 def create_record(obj, fields):
     ''' given obj from db returns named tuple with fields mapped to values '''
     result = {}
