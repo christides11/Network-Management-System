@@ -1,4 +1,4 @@
-import { Dialog, DialogTitle, FormControl, InputLabel, Modal, Select, Typography, MenuItem, TextField } from "@mui/material";
+import { Dialog, DialogTitle, FormControl, InputLabel, Modal, Select, Typography, MenuItem, TextField, Button } from "@mui/material";
 import { Box } from "@mui/system";
 import { useEffect } from 'react';
 import useState from 'react-usestateref';
@@ -19,10 +19,18 @@ const style = {
 function CreateSensorModal({open, handleClose, socket}){
     const [sensorindex, setSensorIndex, sensorIndexRef] = useState(-1);
     const [sensorList, setSensorList, sensorListRef] = useState([]);
-    const [name, setName, nameRef] = useState("");
+    const [generalSettings, setGeneralSettings, generalSettingsRef] = useState({"name":""});
+    const [sensorSettings, setSensorSettings, sensorSettingsRef] = useState({});
 
     const handleSensorIDChange = (event) => {
         setSensorIndex(event.target.value);
+    }
+
+    const handleNameChange = (event) => {
+        setGeneralSettings(prevState => ({
+            ...prevState,
+            ["name"]: event.target.value
+        }));
     }
 
     const receiveSensorList = (data) => {
@@ -31,9 +39,13 @@ function CreateSensorModal({open, handleClose, socket}){
 
     const localHandleClose = () => {
         setSensorIndex(0);
-        setName("");
         handleClose();
     }
+
+    const handleCreateSensor = () => {
+        
+        localHandleClose();
+    };
 
     useEffect(() => {
         socket.on("ReceiveSensorList", receiveSensorList);
@@ -77,11 +89,12 @@ function CreateSensorModal({open, handleClose, socket}){
                     </Select>
                     {sensorindex != -1 &&
                         <>
-                            <TextField id="outlined-basic" label="Sensor Name" variant="outlined" value={name} onChange={(event) => { setName(event.target.value); }} />
+                            <TextField id="outlined-basic" label="Sensor Name" variant="outlined" value={generalSettings["name"]} onChange={handleNameChange} />
                             <br/>
-                            <SensorSettings sensordata={sensorList[sensorindex]} socket={socket} />
+                            <SensorSettings sensordata={sensorList[sensorindex]} socket={socket} sensorSettings={sensorSettings} setSensorSettings={setSensorSettings} />
                         </>
                     }
+                    <Button variant="contained" color="primary" type="submit" onClick={handleCreateSensor}>Create Sensor</Button>
                 </FormControl>
             </Box>
         </Dialog>
