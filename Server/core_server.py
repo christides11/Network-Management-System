@@ -39,7 +39,7 @@ from discovery import *
 async def connect(sid, environ):
     print("connect ", sid)
 
-# Probe python script request the server to link it's socket.io connect
+# Probe requests the server to link it's socket.io connection
 # to the probe it's suppose to represent in the database.
 @sio.event
 async def LinkProbe(sid, probeID):
@@ -111,7 +111,6 @@ def TryStartDiscoveryJob():
             cursor.execute("UPDATE public.\"scanParameters\" SET \"nextscantime\"=\'{}\' WHERE id={}".format(temp, record[x]["id"]))
         dbConn.commit()
         cursor.close()
-
 
 @sio.event
 def disconnect(sid):
