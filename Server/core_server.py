@@ -12,6 +12,7 @@ from datetime import datetime, timedelta, timezone
 from aiorun import run
 from getmac import get_mac_address
 import time
+import helpers
 
 localProbeID = 1
 hostProbe = NULL
@@ -42,65 +43,6 @@ async def LinkProbe(sid, probeID):
     probes[probeID]['sid'] = sid
     print("SERVER: Linked sid {} to probe {}".format(sid, probeID))
 
-
-### --- HELPER FUNCTIONS --- ###
-
-def create_record(obj, fields):
-    ''' given obj from db returns named tuple with fields mapped to values '''
-    result = {}
-    for x in range(len(fields)):
-        resultObj = obj[x]
-        if isinstance(obj[x], datetime):
-            resultObj = obj[x].__str__()
-        result[str(fields[x])] = resultObj
-    return result
-
-# Execute the given command on the DB and return a list of results. Each result is a dictionary with the keys being
-# the name of the given column.
-def fetchAllFromDB(action):
-    result = []
-    cursor = dbConn.cursor()
-    try:
-        cursor.execute(action)
-        record = cursor.fetchall()
-        column_names = [desc[0] for desc in cursor.description]
-        if record is None:
-            return result
-        for row in record:
-            result.append(create_record(row, column_names))
-    except Exception as e:
-        print(e)
-        pass
-    cursor.close()
-    return result
-
-def fetchOneFromDB(action):
-    cursor = dbConn.cursor()
-    cursor.execute(action)
-    record = cursor.fetchone()
-    column_names = [desc[0] for desc in cursor.description]
-    cursor.close()
-    result = None
-    if record is None:
-        return record
-    result = create_record(record, column_names)
-    return result
-
-def lst2pgarr(alist):
-    return '{' + ','.join(alist) + '}'
-
-def intlst2pgarr(alist):
-    temp = "{"
-    for x in range(len(alist)):
-        temp += str(alist[x])
-        if x < len(alist)-1:
-            temp += ","
-    temp += "}"
-    return temp
-
-def current_milli_time():
-    return round(time.time() * 1000)
-
 ### --- LOGIN AND REGISTRATION --- ###
 
 # Client tries to login with the given credentials. 
@@ -109,7 +51,7 @@ def current_milli_time():
 async def RequestLogin(sid, data):
     print("Trying to login with given credentials. {}".format(data["username"]))
     sessionID = NULL
-    record = fetchAllFromDB("SELECT username, password FROM public.user WHERE username = '{}' AND password = '{}'".format(data["username"], data["password"]))
+    record = helpers.fetchAllFromDB("SELECT username, password FROM public.user WHERE username = '{}' AND password = '{}'".format(data["username"], data["password"]))
     if len(record) == 1:
         sessionID = data["username"]
         currentSessions.append(sessionID)
@@ -121,7 +63,7 @@ async def RequestLogin(sid, data):
 @sio.event
 async def RequestRegistration(sid, data):
     print("Trying to register user.")
-    record = fetchAllFromDB("SELECT username, password FROM user WHERE username = '{}'".format(data["username"]))
+    record = helpers.fetchAllFromDB("SELECT username, password FROM user WHERE username = '{}'".format(data["username"]))
     if(len(record) > 0):
         await sio.emit('ReceiveRegistrationResult', {'result': False}, sid)
     # TODO: Register user in db.
@@ -136,7 +78,7 @@ def VerifySession(sessionID):
 # Sends a list of all discovery scans currently registered in the database.
 @sio.event
 async def RequestDiscoveryScanList(sid):
-    record = fetchAllFromDB("SELECT * FROM public.\"scanParameters\"")
+    record = helpers.fetchAllFromDB("SELECT * FROM public.\"scanParameters\"")
     await sio.emit('ReceiveDiscoveryScanList', record, sid)
 
 # Add a discovery scan to the database.
@@ -179,7 +121,7 @@ def ReceiveScanLogFromProbe(sid, data):
 
 @sio.event
 async def RequestScanLogs(sid):
-    record = fetchAllFromDB("SELECT * FROM public.\"Scan_Results\"")
+    record = helpers.fetchAllFromDB("SELECT * FROM public.\"Scan_Results\"")
     await sio.emit('ReceiveScanLogs', record, sid)
 
 # Goes through every registered discovery job and tries to start ones
@@ -187,16 +129,16 @@ async def RequestScanLogs(sid):
 def TryStartDiscoveryJob():
     record = []
     now_utc = datetime.now(timezone.utc)
-    record += fetchAllFromDB("SELECT * FROM public.\"scanParameters\" WHERE \"scanfrequencytype\" = 0 AND \"nextscantime\" != NULL")
-    record += fetchAllFromDB("SELECT * FROM public.\"scanParameters\" WHERE \"scanfrequencytype\" != 0 AND \"nextscantime\" <= \'{}\'".format(now_utc))
+    record += helpers.fetchAllFromDB("SELECT * FROM public.\"scanParameters\" WHERE \"scanfrequencytype\" = 0 AND \"nextscantime\" != NULL")
+    record += helpers.fetchAllFromDB("SELECT * FROM public.\"scanParameters\" WHERE \"scanfrequencytype\" != 0 AND \"nextscantime\" <= \'{}\'".format(now_utc))
     for x in range(len(record)):
         if record[x]["probeID"] not in probes:
             print("Probe", record[x][12], "is not currently awake, or does not exist.")
             continue
         # Get all SNMP credentials.
-        snmpCreds = fetchAllFromDB("SELECT * FROM public.\"SNMP_Credentials\" WHERE \"id\" = ANY(\'{}\'::int[])".format(intlst2pgarr(record[x]["snmpCredentials"])))
+        snmpCreds = helpers.fetchAllFromDB("SELECT * FROM public.\"SNMP_Credentials\" WHERE \"id\" = ANY(\'{}\'::int[])".format(helpers.intlst2pgarr(record[x]["snmpCredentials"])))
         # Get all WMI credentials.
-        wmiCreds = fetchAllFromDB("SELECT * FROM public.\"WMI_Credentials\" WHERE \"id\" = ANY(\'{}\'::int[])".format(intlst2pgarr(record[x]["wmiCredentials"])))
+        wmiCreds = helpers.fetchAllFromDB("SELECT * FROM public.\"WMI_Credentials\" WHERE \"id\" = ANY(\'{}\'::int[])".format(helpers.intlst2pgarr(record[x]["wmiCredentials"])))
         # Send command to probe to start the scan with given parameters.
         loop = asyncio.get_event_loop()
         loop.create_task(sio.emit('Probe_RunDiscoverScan', {"params": record[x], "snmpCreds": snmpCreds, "wmiCreds": wmiCreds }, probes[record[x]["probeID"]]['sid']))
@@ -226,7 +168,7 @@ def disconnect(sid):
 # Returns the network with the given id.
 @sio.event
 async def RequestNetwork(sid, networkId):
-    result = fetchOneFromDB("SELECT * FROM public.network WHERE id = {}".format(networkId))
+    result = helpers.fetchOneFromDB("SELECT * FROM public.network WHERE id = {}".format(networkId))
     await sio.emit('ReceiveNetwork', result, sid)
 
 ### --- CREDENTIALS --- ###
@@ -267,13 +209,13 @@ async def RequestWMICredential(sid, credentialId):
 # returns a list of all sensors in the db.
 @sio.event
 async def RequestSensorList(sid):
-    results = fetchAllFromDB("SELECT * FROM public.sensor")
+    results = helpers.fetchAllFromDB("SELECT * FROM public.sensor")
     await sio.emit('ReceiveSensorList', results, sid)
 
 # returns the sensor with the given id.
 @sio.event
 async def RequestSensor(sid, sensorID):
-    result = fetchOneFromDB("SELECT * FROM public.sensor WHERE \"id\"={}".format(sensorID))
+    result = helpers.fetchOneFromDB("SELECT * FROM public.sensor WHERE \"id\"={}".format(sensorID))
     await sio.emit('ReceiveSensor', result, sid)
 
 ### --- DEVICES --- ###
@@ -293,19 +235,19 @@ async def RequestProbeList(sid):
 # returns a list of all devices attached to the given probe.
 @sio.event
 async def RequestDeviceListFromProbe(sid, probeID):
-    result = fetchAllFromDB("SELECT * FROM public.device WHERE \"parent\" = {}".format(probeID))
+    result = helpers.fetchAllFromDB("SELECT * FROM public.device WHERE \"parent\" = {}".format(probeID))
     await sio.emit('ReceiveDeviceList', {"devices": result, "probeID": probeID}, sid)
 
 # returns a list of all devices in the database.
 @sio.event
 async def RequestDeviceList(sid):
-    result = fetchAllFromDB("SELECT * FROM public.device")
+    result = helpers.fetchAllFromDB("SELECT * FROM public.device")
     await sio.emit('ReceiveDeviceList', result, sid)
 
 # Returns a device with the given id.
 @sio.event
 async def RequestDevice(sid, deviceId):
-    result = fetchOneFromDB("SELECT * FROM public.device WHERE id = {}".format(deviceId))
+    result = helpers.fetchOneFromDB("SELECT * FROM public.device WHERE id = {}".format(deviceId))
     await sio.emit('ReceiveDevice', result, sid)
 
 # Register the given device to the database for tracking.
@@ -313,7 +255,7 @@ async def RequestDevice(sid, deviceId):
 async def RegisterDevice(sid, data):
     result = {"result": False, "ip": data["ip"], "reason": "Duplicate entry."}
     try:
-        d = fetchOneFromDB("SELECT * FROM public.device WHERE \"ipAddress\" = \'{}\'".format(data["ip"]))
+        d = helpers.fetchOneFromDB("SELECT * FROM public.device WHERE \"ipAddress\" = \'{}\'".format(data["ip"]))
         if d is None:
             print("Registering device {}".format(data["deviceName"]))
             cursor = dbConn.cursor()
@@ -360,6 +302,7 @@ def Initialize():
 async def main(shouldHostProbe, serverIP, serverPort):
     global hostProbe, dbConn, localProbeID
     dbConn = psycopg2.connect(dbname=dbLogin["DB_NAME"], user=dbLogin["DB_USER"], password=dbLogin["DB_PASS"], host=dbLogin["DB_HOST"])
+    helpers.dbConn = dbConn
     cursor = dbConn.cursor()
     cursor.execute("select version()")
     data = cursor.fetchone()
