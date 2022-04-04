@@ -20,15 +20,18 @@ f = open('env.json')
 dbLogin = json.load(f)
 f.close()
 dbConn = psycopg2.connect(dbname=dbLogin["DB_NAME"], user=dbLogin["DB_USER"], password=dbLogin["DB_PASS"], host=dbLogin["DB_HOST"])
-import helpers
 
 sio = socketio.AsyncServer(cors_allowed_origins='*')
 app = web.Application()
 sio.attach(app)
-from devices import * 
 
 probes = {}
 currentSessions = []
+
+import helpers
+from devices import * 
+from credentials import *
+from sensors import *
 
 @sio.event
 async def connect(sid, environ):
@@ -171,54 +174,6 @@ def disconnect(sid):
 async def RequestNetwork(sid, networkId):
     result = helpers.fetchOneFromDB("SELECT * FROM public.network WHERE id = {}".format(networkId))
     await sio.emit('ReceiveNetwork', result, sid)
-
-### --- CREDENTIALS --- ###
-
-@sio.event
-async def RequestSNMPCredentials(sid):
-    cursor = dbConn.cursor()
-    cursor.execute("SELECT * FROM public.\"SNMP_Credentials\"")
-    record = cursor.fetchall()
-    cursor.close()
-    await sio.emit('ReceiveSNMPCredentials', record, sid)
-
-@sio.event
-async def RequestSNMPCredential(sid, credentialId):
-    cursor = dbConn.cursor()
-    cursor.execute("SELECT * FROM public.\"SNMP_Credentials\" WHERE \"id\"={}".format(credentialId))
-    record = cursor.fetchone()
-    cursor.close()
-    await sio.emit('ReceiveSNMPCredential', record, sid)
-
-@sio.event
-async def RequestWMICredentials(sid):
-    cursor = dbConn.cursor()
-    cursor.execute("SELECT * FROM public.\"WMI_Credentials\"")
-    record = cursor.fetchall()
-    await sio.emit('ReceiveWMICredentials', record, sid)
-
-@sio.event
-async def RequestWMICredential(sid, credentialId):
-    cursor = dbConn.cursor()
-    cursor.execute("SELECT * FROM public.\"WMI_Credentials\" WHERE \"id\"={}".format(credentialId))
-    record = cursor.fetchone()
-    cursor.close()
-    await sio.emit('ReceiveWMICredential', record, sid)
-
-### --- SENSORS --- ###
-
-# returns a list of all sensors in the db.
-@sio.event
-async def RequestSensorList(sid):
-    results = helpers.fetchAllFromDB("SELECT * FROM public.sensor")
-    await sio.emit('ReceiveSensorList', results, sid)
-
-# returns the sensor with the given id.
-@sio.event
-async def RequestSensor(sid, sensorID):
-    result = helpers.fetchOneFromDB("SELECT * FROM public.sensor WHERE \"id\"={}".format(sensorID))
-    await sio.emit('ReceiveSensor', result, sid)
-
 
 ### --- INITIALIZATION --- ###
 
