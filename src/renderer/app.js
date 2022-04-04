@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { io } from 'socket.io-client';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import LoginPage from '../main/login/login';
 import DiscoveryPage from '../main/discovery/discoveryTemp';
@@ -9,7 +8,6 @@ import SummaryPage from '../main/summary/summary';
 import Alerts from '../main/alerts/alerts';
 import EventLog from '../main/eventlog/eventLog';
 import Navbar from '../components/navbar/navbar';
-import Home from '../main/home/home';
 import { socket } from '../api/socket';
 import './app.css';
 import DiscoveryJobsPage from '../main/discoveryjobs/discoveryjobs';
