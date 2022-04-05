@@ -1,10 +1,12 @@
 from asyncio.windows_events import NULL
+from pickle import NONE
 from aiohttp import web
 import socketio
 import sys
 import psycopg2
 import json
 import sys
+
 sys.path.append('../Probe/')
 import subprocess
 import asyncio
@@ -127,6 +129,36 @@ async def RequestNetwork(sid, networkId):
     result = helpers.fetchOneFromDB("SELECT * FROM public.network WHERE id = {}".format(networkId))
     await sio.emit('ReceiveNetwork', result, sid)
 
+### --- DEVICE STATUS --- ###
+async def DeviceStatusJob():
+    while True:
+        await asyncio.sleep(30)
+        for item in probes.keys():
+            record = helpers.fetchAllFromDB("SELECT \"ipAddress\" FROM public.device WHERE \"parent\"={} AND \"networkID\"={}".format(item, network))
+            for r in record:
+                loop = asyncio.get_event_loop()
+                loop.create_task(sio.emit('Probe_TryPingDevice', {"ip": r['ipAddress']}, probes[item]["sid"]))
+
+@sio.event
+async def ReportDevicePingResult(sid, data):
+    record = helpers.fetchOneFromDB("SELECT \"id\", \"status\" FROM public.device WHERE \"ipAddress\"=\'{}\' AND \"networkID\"={}".format(data["ip"], network))
+    if record is NONE:
+        return
+    if data["result"] == True:
+        cursor = dbConn.cursor()
+        cursor.execute("UPDATE public.device SET \"status\"=2, \"statusmessage\"=\'Device is up.\' WHERE \"id\"={}".format(record["id"]))
+        dbConn.commit()
+        cursor.close()
+    else:
+        cursor = dbConn.cursor()
+        if record["status"] != 4:
+            cursor.execute("UPDATE public.device SET \"status\"=3, \"statusmessage\"=\'Device seems to be down.\' WHERE \"id\"={}".format(record["id"]))
+        else:
+            cursor.execute("UPDATE public.device SET \"status\"=4, \"statusmessage\"=\'Device seems to be down.\' WHERE \"id\"={}".format(record["id"]))
+        dbConn.commit()
+        cursor.close()
+
+
 ### --- INITIALIZATION --- ###
 
 # Grabs various data from the database.
@@ -155,11 +187,6 @@ def Initialize():
         if item[4] == str(get_mac_address(hostname="localhost")):
             localProbeID = int(item[0])
     cursor.close()
-
-async def DeviceStatusJob():
-    while True:
-        await asyncio.sleep(30)
-        print("StatusJob")
 
 async def main(shouldHostProbe, serverIP, serverPort):
     global hostProbe, dbConn, localProbeID

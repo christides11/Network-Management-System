@@ -60,7 +60,8 @@ async def Probe_TryPingDevice(data):
     DEVNULL = open(os.devnull,'w')
     success = False
     try:
-        subprocess.check_call(['ping','-n','1','-w','250', data["ip"]], stdout=DEVNULL)
+        subprocess.check_call(['ping','-n','2','-w','250', data["ip"]], stdout=DEVNULL)
+        success = True
     except:
         pass
     await sio.emit('ReportDevicePingResult', {"ip": data["ip"], "result": success})
