@@ -129,6 +129,21 @@ async def RequestNetwork(sid, networkId):
     result = helpers.fetchOneFromDB("SELECT * FROM public.network WHERE id = {}".format(networkId))
     await sio.emit('ReceiveNetwork', result, sid)
 
+### --- DEVICE SENSORS --- ###
+
+async def DeviceSensorJob():
+    while True:
+        await asyncio.sleep(10)
+        for item in probes.keys():
+            devices = helpers.fetchAllFromDB("SELECT ds.device_id, ds.sensor_id, ds.id, d.\"ipAddress\", ds.settings, d.\"snmpCredentials\", d.\"wmiCredentials\" FROM public.device d, public.devicesensor ds WHERE d.id=ds.device_id AND d.\"networkID\"={} AND d.\"parent\"={}".format(network, item))
+            for device in devices:
+                data = [device, None, None]
+                if data[0]['snmpCredentials'] != None:
+                    data[1] = helpers.fetchOneFromDB("SELECT * FROM public.\"SNMP_Credentials\" WHERE id={}".format(data[0]['snmpCredentials']))
+                if data[0]['wmiCredentials'] != None:
+                    data[2] = helpers.fetchOneFromDB("SELECT * FROM public.\"WMI_Credentials\" WHERE id={}".format(data[0]['wmiCredentials']))
+                #print(data)
+
 ### --- DEVICE STATUS --- ###
 
 # After a set amount of time, ask every probe to ping all the devices attached to them to check their status.
@@ -207,6 +222,7 @@ async def main(shouldHostProbe, serverIP, serverPort):
     await site.start()
     loop = asyncio.get_event_loop()
     loop.create_task(DeviceStatusJob())
+    loop.create_task(DeviceSensorJob())
     while True:
         await asyncio.sleep(5)  # sleep for 1 minute.
         TryStartDiscoveryJob()
