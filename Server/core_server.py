@@ -130,15 +130,19 @@ async def RequestNetwork(sid, networkId):
     await sio.emit('ReceiveNetwork', result, sid)
 
 ### --- DEVICE STATUS --- ###
+
+# After a set amount of time, ask every probe to ping all the devices attached to them to check their status.
 async def DeviceStatusJob():
     while True:
-        await asyncio.sleep(30)
         for item in probes.keys():
             record = helpers.fetchAllFromDB("SELECT \"ipAddress\" FROM public.device WHERE \"parent\"={} AND \"networkID\"={}".format(item, network))
             for r in record:
                 loop = asyncio.get_event_loop()
                 loop.create_task(sio.emit('Probe_TryPingDevice', {"ip": r['ipAddress']}, probes[item]["sid"]))
+        await asyncio.sleep(300)
 
+# Probe reports the status of a single device.
+# TODO: Should have a probe collect the status of multiple devices and return them all at once instead.
 @sio.event
 async def ReportDevicePingResult(sid, data):
     record = helpers.fetchOneFromDB("SELECT \"id\", \"status\" FROM public.device WHERE \"ipAddress\"=\'{}\' AND \"networkID\"={}".format(data["ip"], network))
