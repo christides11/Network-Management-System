@@ -33,7 +33,7 @@ function LoginPage({ socket, sessionID, setSessionID }) {
     <div className="LoginPage">
       <form className="container">
 
-          {/* Logo */}
+        {/* Logo */}
         <div className="container w-25">
             <img src={logo} className="img-fluid" alt=""/>
         </div>
@@ -50,13 +50,13 @@ function LoginPage({ socket, sessionID, setSessionID }) {
               onInput={(e) => setUsername(e.target.value)}
             />
             <small id="usernameHelp" className="form-text text-muted">
-              We take your privacy seriously...
+              We take your privacy seriously.
             </small>
           </div>
         </div>
 
         <div className="row">
-          <div class="form-group mb-3 col-xs-12 col-lg-7 mx-auto">
+          <div className="form-group mb-3 col-xs-12 col-lg-7 mx-auto">
             <label for="password">Password</label>
             <input
               type="password"
@@ -67,9 +67,16 @@ function LoginPage({ socket, sessionID, setSessionID }) {
               placeholder="Password"
             />
              <small id="usernameHelp" className="form-text text-muted">
-              Security is our middle name...
+              Security is our middle name.
             </small>
           </div>
+        </div>
+
+        <div className="row mb-3">
+          <div className="text-center">
+            <p>Not a member? <a href="/register" id="register-link" className="link-primary">Register</a></p>
+          </div>
+
         </div>
 
         <div className="text-center">

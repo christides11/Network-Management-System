@@ -1,4 +1,7 @@
 .LoginPage {
     /*text-align: center;*/
   }
-  
+
+#register-link {
+  text-decoration: none;
+}
