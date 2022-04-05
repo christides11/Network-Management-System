@@ -12,11 +12,11 @@ export default function Navbar() {
     return (
         <>
         <IconContext.Provider value={{color: "#fff"}}>
-            <div className="navbar">
+            <nav className="navbar">
                 <Link to="#" className="menuBars">
                     <FaIcons.FaBars onClick={showSideBar} />
                 </Link>
-            </div>
+            </nav>
             <nav className={sideBar ? 'navMenu active' : 'navMenu' } >
                 <ul className="navMenuItems" onClick={showSideBar}>
                     <li className="navBarToggle">
