@@ -22,7 +22,3 @@ A network management system developed in Senior Project for Cisco.
 ### 3. Webserver Setup
 1. In the main directory, do ```npm install```.
 2. Once done, do ```npm start```. The webserver should run on the same device as the core server.
-
-### Found Problems
-- `ModuleNotFoundError: No module named 'pysnmp'` error.
-  - Run `pip install pysnmp` should solve it.
