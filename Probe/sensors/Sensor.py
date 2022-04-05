@@ -5,3 +5,7 @@ class Sensor:
     
     def getid(self):
         return self.id
+    
+    def runSensor(self, data, onFinishMethod):
+        print(data)
+        onFinishMethod("hehe")
