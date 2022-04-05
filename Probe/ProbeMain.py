@@ -50,6 +50,10 @@ async def Probe_RunDiscoverScan(data):
             print("SCAN TYPE: Subnets")
     await sio.emit('ReceiveScanLogFromProbe', {'discoveryID': data['params']['id'], 'devicesFound': result})
 
+@sio.event
+async def Probe_TryPingAllDevices(data):
+    print("...")
+
 # Probe tries to ping a given IP address, returning information on the device if successful.
 @sio.event
 async def Probe_TryPingDevice(data):
@@ -59,7 +63,7 @@ async def Probe_TryPingDevice(data):
         subprocess.check_call(['ping','-n','1','-w','250', data["ip"]], stdout=DEVNULL)
     except:
         pass
-    await sio.emit('ReportDevicePingResult', success)
+    await sio.emit('ReportDevicePingResult', {"ip": data["ip"], "result": success})
 
 @sio.event
 async def disconnect():

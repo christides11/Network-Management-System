@@ -156,6 +156,11 @@ def Initialize():
             localProbeID = int(item[0])
     cursor.close()
 
+async def DeviceStatusJob():
+    while True:
+        await asyncio.sleep(30)
+        print("StatusJob")
+
 async def main(shouldHostProbe, serverIP, serverPort):
     global hostProbe, dbConn, localProbeID
     cursor = dbConn.cursor()
@@ -169,6 +174,8 @@ async def main(shouldHostProbe, serverIP, serverPort):
     await runner.setup()
     site = web.TCPSite(runner, serverIP, serverPort)
     await site.start()
+    loop = asyncio.get_event_loop()
+    loop.create_task(DeviceStatusJob())
     while True:
         await asyncio.sleep(5)  # sleep for 1 minute.
         TryStartDiscoveryJob()
