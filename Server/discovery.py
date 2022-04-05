@@ -2,6 +2,7 @@ from __main__ import sio
 from __main__ import dbConn
 from __main__ import helpers
 from datetime import datetime, timezone
+import json
 
 # Sends a list of all discovery scans currently registered in the database.
 @sio.event
