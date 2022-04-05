@@ -25,7 +25,9 @@ CREATE TABLE "device" (
   "parent" int,
   "networkID" int,
   "snmpCredentials" int,
-  "wmiCredentials" int
+  "wmiCredentials" int,
+  "status" int,
+  "statusmessage" varchar
 );
 
 CREATE TABLE "scanParameters" (
@@ -85,7 +87,7 @@ CREATE TABLE "sensorchannel" (
   PRIMARY KEY ("sensor_id", "id")
 );
 
-CREATE TABLE "sensorstatus" (
+CREATE TABLE "statustype" (
   "id" int PRIMARY KEY NOT NULL,
   "name" varchar
 );
@@ -124,6 +126,8 @@ ALTER TABLE "device" ADD FOREIGN KEY ("snmpCredentials") REFERENCES "SNMP_Creden
 
 ALTER TABLE "device" ADD FOREIGN KEY ("wmiCredentials") REFERENCES "WMI_Credentials" ("id");
 
+ALTER TABLE "device" ADD FOREIGN KEY ("status") REFERENCES "statustype" ("id");
+
 ALTER TABLE "scanParameters" ADD FOREIGN KEY ("probeID") REFERENCES "device" ("id");
 
 ALTER TABLE "scanParameters" ADD FOREIGN KEY ("networkID") REFERENCES "network" ("id");
@@ -132,7 +136,7 @@ ALTER TABLE "devicesensor" ADD FOREIGN KEY ("sensor_id") REFERENCES "sensor" ("i
 
 ALTER TABLE "devicesensor" ADD FOREIGN KEY ("device_id") REFERENCES "device" ("id");
 
-ALTER TABLE "devicesensor" ADD FOREIGN KEY ("status") REFERENCES "sensorstatus" ("id");
+ALTER TABLE "devicesensor" ADD FOREIGN KEY ("status") REFERENCES "statustype" ("id");
 
 ALTER TABLE "sensorchannel" ADD FOREIGN KEY ("sensor_id") REFERENCES "sensor" ("id");
 
@@ -144,11 +148,11 @@ ALTER TABLE "Scan_Results" ADD FOREIGN KEY ("scanID") REFERENCES "scanParameters
 
 ALTER TABLE "user" ADD FOREIGN KEY ("networkID") REFERENCES "network" ("id");
 
+INSERT INTO public."statustype" VALUES (1, 'Unknown');
+INSERT INTO public."statustype" VALUES (2, 'Up');
+INSERT INTO public."statustype" VALUES (3, 'Warning');
+INSERT INTO public."statustype" VALUES (4, 'Down');
 INSERT INTO public."network" VALUES (DEFAULT, 'network one', NULL, NULL);
-INSERT INTO public."device" VALUES (DEFAULT, 'localProbe', DEFAULT, 'localhost', '00:00:00:00:00:00', NULL, 1);
-INSERT INTO public."sensorstatus" VALUES (1, 'Unknown');
-INSERT INTO public."sensorstatus" VALUES (2, 'Up');
-INSERT INTO public."sensorstatus" VALUES (3, 'Warning');
-INSERT INTO public."sensorstatus" VALUES (4, 'Down');
+INSERT INTO public."device" VALUES (DEFAULT, 'localProbe', DEFAULT, 'localhost', '00:00:00:00:00:00', NULL, 1, NULL, NULL, 2);
 INSERT INTO public."sensor" VALUES (1, 'Ping', 'Sends an ICMP request from the probe to the device to monitor its availability.');
 INSERT INTO public."sensor" VALUES (2, 'SNMP Traffic', 'Monitors network traffic on a device using SNMP.');

@@ -143,7 +143,7 @@ def Initialize():
         .format(str(get_mac_address(hostname="localhost")), network))
     record = cursor.fetchall()
     if len(record) == 0:
-        cursor.execute('INSERT INTO public.device("name", "dateAdded", "ipAddress", "macAddress", "networkID") VALUES (\'{}\', \'{}\', \'{}\', \'{}\', {})'
+        cursor.execute('INSERT INTO public.device("name", "dateAdded", "ipAddress", "macAddress", "networkID", "status") VALUES (\'{}\', \'{}\', \'{}\', \'{}\', {}, 2)'
             .format('local probe', datetime.now().strftime("%m/%d/%Y, %H:%M:%S"), 'localhost', str(get_mac_address(hostname="localhost")), network) )    
     dbConn.commit()
     # Get list of probes.
