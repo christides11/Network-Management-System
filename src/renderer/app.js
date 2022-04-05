@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import LoginPage from '../main/login/login';
+import RegisterPage from '../main/register/register';
 import DiscoveryPage from '../main/discovery/discoveryTemp';
 import DevicesPage from '../main/devices/devices';
 import DevicePage from '../main/device/device';
@@ -36,6 +37,7 @@ export default function App(){
             <Navbar />
             <Routes>
                 <Route path="/" element={<LoginPage socket={socket} sessionID={sessionID} setSessionID={setSessionID} />} />
+                <Route path="/register" element={<RegisterPage socket={socket} sessionID={sessionID} setSessionID={setSessionID} />} />
                 <Route path="/summary" element={<SummaryPage socket={socket} />} />
                 <Route path="/devices" element={<DevicesPage socket={socket} />} />
                 <Route path="/devices/:deviceId" element={<DevicePage socket={socket} />} />
