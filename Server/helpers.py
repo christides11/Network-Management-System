@@ -43,6 +43,12 @@ def fetchOneFromDB(action):
     result = create_record(record, column_names)
     return result
 
+def executeOnDB(action):
+    cursor = dbConn.cursor()
+    cursor.execute(action)
+    dbConn.commit()
+    cursor.close()
+
 def lst2pgarr(alist):
     return '{' + ','.join(alist) + '}'
 

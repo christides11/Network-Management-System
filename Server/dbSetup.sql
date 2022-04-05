@@ -101,6 +101,7 @@ CREATE TABLE "devicesensor" (
   "status" int,
   "statusmessage" varchar,
   "settings" jsonb,
+  "nexttime" timestamp NOT NULL,
   PRIMARY KEY ("device_id", "sensor_id", "id")
 );
 

@@ -67,6 +67,10 @@ async def Probe_TryPingDevice(data):
     await sio.emit('ReportDevicePingResult', {"ip": data["ip"], "result": success})
 
 @sio.event
+async def Probe_RunDeviceSensors(data):
+    print(data)
+
+@sio.event
 async def disconnect():
     print('disconnected from server.')
 

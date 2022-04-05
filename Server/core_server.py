@@ -134,15 +134,18 @@ async def RequestNetwork(sid, networkId):
 async def DeviceSensorJob():
     while True:
         await asyncio.sleep(10)
+        now_utc = datetime.now(timezone.utc)
         for item in probes.keys():
-            devices = helpers.fetchAllFromDB("SELECT ds.device_id, ds.sensor_id, ds.id, d.\"ipAddress\", ds.settings, d.\"snmpCredentials\", d.\"wmiCredentials\" FROM public.device d, public.devicesensor ds WHERE d.id=ds.device_id AND d.\"networkID\"={} AND d.\"parent\"={}".format(network, item))
+            devices = helpers.fetchAllFromDB("SELECT ds.device_id, ds.sensor_id, ds.id, d.\"ipAddress\", ds.settings, d.\"snmpCredentials\", d.\"wmiCredentials\" FROM public.device d, public.devicesensor ds WHERE d.id=ds.device_id AND d.\"networkID\"={} AND d.\"parent\"={} AND ds.\"nexttime\"<=\'{}\'".format(network, item, now_utc))
             for device in devices:
                 data = [device, None, None]
                 if data[0]['snmpCredentials'] != None:
                     data[1] = helpers.fetchOneFromDB("SELECT * FROM public.\"SNMP_Credentials\" WHERE id={}".format(data[0]['snmpCredentials']))
                 if data[0]['wmiCredentials'] != None:
                     data[2] = helpers.fetchOneFromDB("SELECT * FROM public.\"WMI_Credentials\" WHERE id={}".format(data[0]['wmiCredentials']))
-                #print(data)
+                loop = asyncio.get_event_loop()
+                loop.create_task(sio.emit('Probe_RunDeviceSensors', data, probes[item]['sid']))
+                helpers.executeOnDB("UPDATE public.devicesensor SET \"nexttime\"=\'{}\' WHERE device_id={}".format(now_utc + timedelta(seconds=10), device['device_id']))
 
 ### --- DEVICE STATUS --- ###
 

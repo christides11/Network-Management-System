@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 from __main__ import sio
 from __main__ import dbConn
 from __main__ import helpers
@@ -38,11 +38,12 @@ async def RequestDevice(sid, deviceId):
 async def RegisterDevice(sid, data):
     result = {"result": False, "ip": data["ip"], "reason": "Duplicate entry."}
     try:
+        now_utc = datetime.now(timezone.utc)
         d = helpers.fetchOneFromDB("SELECT * FROM public.device WHERE \"ipAddress\" = \'{}\'".format(data["ip"]))
         if d is None:
             print("Registering device {}".format(data["deviceName"]))
             cursor = dbConn.cursor()
-            cursor.execute("INSERT INTO public.device VALUES (DEFAULT, \'{}\', \'{}\', \'{}\', {}, {}, {}, {}, {}, 1, \'Device has been setup but not pinged yet by probe.\')".format(data['deviceName'], datetime.now().strftime("%m/%d/%Y, %H:%M:%S"), data['ip'], 'NULL', data['parentProbe'], 1, data['snmpCredential'] if data['snmpCredential'] > 0 else 'NULL', data['wmiCredential'] if data['wmiCredential'] > 0 else 'NULL' ))
+            cursor.execute("INSERT INTO public.device VALUES (DEFAULT, \'{}\', \'{}\', \'{}\', {}, {}, {}, {}, {}, 1, \'Device has been setup but not pinged yet by probe.\')".format(data['deviceName'], now_utc, data['ip'], 'NULL', data['parentProbe'], 1, data['snmpCredential'] if data['snmpCredential'] > 0 else 'NULL', data['wmiCredential'] if data['wmiCredential'] > 0 else 'NULL' ))
             cursor.close()
             dbConn.commit()
             result['result'] = True
