@@ -53,7 +53,13 @@ async def Probe_RunDiscoverScan(data):
 # Probe tries to ping a given IP address, returning information on the device if successful.
 @sio.event
 async def Probe_TryPingDevice(data):
-    print('...')
+    DEVNULL = open(os.devnull,'w')
+    success = False
+    try:
+        subprocess.check_call(['ping','-n','1','-w','250', data["ip"]], stdout=DEVNULL)
+    except:
+        pass
+    await sio.emit('ReportDevicePingResult', success)
 
 @sio.event
 async def disconnect():
