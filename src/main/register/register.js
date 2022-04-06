@@ -17,10 +17,12 @@ function RegisterPage({ socket, sessionID, setSessionID }) {
   let navigate = useNavigate();
 
   const ReceiveRegistrationResult = (data) => {
-    console.log(data.sessionID);
-    if (data.sessionID == 0) return;
-    setSessionID(data.sessionID);
-    navigate("/summary");
+    console.log(data.result);
+    if (data.result) {
+      navigate("/summary");
+    } else {
+      console.log("An error occurred.");
+    }
   };
 
   useEffect(() => {
