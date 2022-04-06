@@ -68,10 +68,11 @@ async def Probe_TryPingDevice(data):
 
 @sio.event
 async def Probe_RunDeviceSensors(data):
-    if data[0]['sensor_id'] not in sensors:
-        print("Sensor", data[0]['sensor_id'], "does not exist or is not registered.")
-        return
-    sensors[data[0]['sensor_id']].runSensor(data, OnDeviceSensorFinished)
+    for d in data:
+        if d[0]['sensor_id'] not in sensors:
+            print("Sensor", d[0]['sensor_id'], "does not exist or is not registered.")
+            return
+        sensors[d[0]['sensor_id']].runSensor([d], OnDeviceSensorFinished)
 
 def OnDeviceSensorFinished(success, deviceid, sensorid, devicesensorid, channelData):
     print("Sensor finished.")

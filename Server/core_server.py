@@ -144,7 +144,7 @@ async def DeviceSensorJob():
                 if data[0]['wmiCredentials'] != None:
                     data[2] = helpers.fetchOneFromDB("SELECT * FROM public.\"WMI_Credentials\" WHERE id={}".format(data[0]['wmiCredentials']))
                 loop = asyncio.get_event_loop()
-                loop.create_task(sio.emit('Probe_RunDeviceSensors', data, probes[item]['sid']))
+                loop.create_task(sio.emit('Probe_RunDeviceSensors', [data], probes[item]['sid']))
                 helpers.executeOnDB("UPDATE public.devicesensor SET \"nexttime\"=\'{}\' WHERE device_id={}".format(now_utc + timedelta(seconds=10), device['device_id']))
 
 ### --- DEVICE STATUS --- ###
