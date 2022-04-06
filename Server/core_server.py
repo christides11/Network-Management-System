@@ -41,10 +41,6 @@ from discovery import *
 async def connect(sid, environ):
     print("connect ", sid)
 
-@sio.event
-async def testCall(sid):
-    print("Test")
-
 # Probe requests the server to link it's socket.io connection
 # to the probe it's suppose to represent in the database.
 @sio.event

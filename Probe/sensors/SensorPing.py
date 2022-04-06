@@ -9,7 +9,7 @@ class SensorPing(Sensor):
         self.id = 1
 
     def getDeviceData(self, d, onFinishMethod):
-        print('')
+        a = ''
         #try:
         #    print(d)
         #except Exception as e:

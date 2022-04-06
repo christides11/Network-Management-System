@@ -4,7 +4,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import moment from 'moment';
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
-import { InputLabel, Select, MenuItem, Checkbox, FormControlLabel, FormGroup, TableContainer, Paper, Table, TableHead, TableRow, TableBody, TableCell, IconButton, Collapse, Typography, Button } from '@mui/material';
+import { InputLabel, Select, MenuItem, Checkbox, FormControlLabel, FormGroup, TableContainer, Paper, Table, TableHead, TableRow, TableBody, TableCell, IconButton, Collapse, Typography, Button, CircularProgress } from '@mui/material';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import { Box } from '@mui/system';
@@ -15,11 +15,11 @@ function DevicesPage({socket}){
 
     const [probeList, setProbeList, probeListRef] = useState([]);
     const [probeDeviceList, setProbeDeviceList, probeDeviceListRef] = useState([]);
-    const [open, setOpen] = useState([]);
-    const [test, setTest] = useState(0); // Force page to refresh from 2d array change, doesn't seem to change otherwise.
-    
+    const [open, setOpen, openRef] = useState([]);
+    const [temp, setTemp, tempRef] = useState(0);
+
     const receiveProbeList = useCallback((data) => {
-        if(probeDeviceList.length != data.length){
+        if(probeDeviceListRef.current.length != data.length){
             let t = [];
             for(let i = 0; i < data.length; i++){
                 let temp = [];
@@ -37,7 +37,7 @@ function DevicesPage({socket}){
             temp[i] = data.devices;
             setProbeDeviceList(temp);
         }
-        setTest(test+1);
+        setTemp(tempRef+1);
     });
 
     useEffect(() => {
@@ -53,7 +53,7 @@ function DevicesPage({socket}){
     }, [socket]);
 
     useEffect(() => {
-        if(open.length == probeList.length) return;
+        if(openRef.current.length == probeList.length) return;
         let temp = [];
         for(let i = 0; i < probeList.length; i++){
             temp.push(false);
@@ -62,10 +62,9 @@ function DevicesPage({socket}){
     }, []);
 
     function SetRowOpen(index, probeID){
-        let temp = open;
+        let temp = [...openRef.current];
         temp[index] = !temp[index];
         setOpen(temp);
-        setTest(test+1);
         if(temp){
             GetProbeDeviceList(probeID);
         }
@@ -76,13 +75,12 @@ function DevicesPage({socket}){
     }
 
     function RefreshDeviceList(){
-        for(let i = 0; i < probeList.length; i++){
-            GetProbeDeviceList(probeList[i].id);
+        for(let i = 0; i < probeListRef.current.length; i++){
+            GetProbeDeviceList(probeListRef.current[i].id);
         }
     }
 
     function ProbeRow({probe, k}) {
-        console.log(probe)
         return (
             <React.Fragment>
                 <TableRow sx={{ '& > *': { borderBottom: 'unset' } }}>
@@ -127,6 +125,13 @@ function DevicesPage({socket}){
                                         </TableRow>
                                     </TableHead>
                                     <TableBody>
+                                        {probeDeviceList.length == 0 &&
+                                            <TableRow key={0}>
+                                                <TableCell>
+                                                    <CircularProgress />
+                                                </TableCell>
+                                            </TableRow>
+                                        }
                                         {probeDeviceList.length != 0 &&
                                             probeDeviceList[k].map((device, idx) => (
                                             <TableRow key={idx}>
