@@ -7,5 +7,4 @@ class Sensor:
         return self.id
     
     def runSensor(self, data, onFinishMethod):
-        print(data)
-        onFinishMethod("hehe")
+        print("base sensor run being called.")

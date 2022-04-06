@@ -73,7 +73,7 @@ async def Probe_RunDeviceSensors(data):
         return
     sensors[data[0]['sensor_id']].runSensor(data, OnDeviceSensorFinished)
 
-def OnDeviceSensorFinished(data):
+def OnDeviceSensorFinished(success, deviceid, sensorid, devicesensorid, channelData):
     print("Sensor finished.")
 
 @sio.event
