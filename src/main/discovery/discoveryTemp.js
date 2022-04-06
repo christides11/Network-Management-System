@@ -7,6 +7,8 @@ import "react-datepicker/dist/react-datepicker.css";
 import { InputLabel, Select, MenuItem, Checkbox, FormControlLabel, FormGroup, TextField, Stack } from '@mui/material';
 import { TimePicker } from '@mui/lab';
 
+import Dis from './Dis';
+
 function DiscoveryPage({socket}){
     let navigate = useNavigate();
 
@@ -121,7 +123,8 @@ function DiscoveryPage({socket}){
 
     return (
         <div className="DiscoveryPage">
-            <h1>Discovery Page</h1>
+            <Dis socket={socket}></Dis>
+            {/* <h1>Discovery Page</h1>
 
             <br/><h2>Network Selection</h2>
             <FormGroup>
@@ -217,7 +220,7 @@ function DiscoveryPage({socket}){
             }
             <br/>
             <br/>
-            <button onClick={RegisterScan}>Register Scan</button>
+            <button onClick={RegisterScan}>Register Scan</button> */}
         </div>
     );
 }
