@@ -49,5 +49,4 @@ async def ReportDeviceSensorStatus(sid, data):
         else:
             helpers.executeOnDB("UPDATE public.devicesensor SET \"status\"=4, \"statusmessage\"=\'Sensor is down.\' WHERE \"device_id\"={} AND \"sensor_id\"={} AND \"id\"={}".format( data['deviceid'], data['sensorid'], data['devicesensorid'] ))
     else:
-        print('device sensor up.')
         helpers.executeOnDB("UPDATE public.devicesensor SET \"status\"=2, \"statusmessage\"=\'Sensor is up.\' WHERE \"device_id\"={} AND \"sensor_id\"={} AND \"id\"={}".format( data['deviceid'], data['sensorid'], data['devicesensorid'] ))

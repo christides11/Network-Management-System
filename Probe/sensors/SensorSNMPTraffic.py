@@ -46,10 +46,7 @@ class SensorSNMPTraffic(Sensor):
             # alert the probe that the task failed & try again.
             if tup in self.jobdata:
                 if self.jobdata[tup].is_alive():
-                    print("Last task took too long.")
                     self.jobdata[tup].terminate()
                     onFinishMethod(False, d[0]['device_id'], d[0]['sensor_id'], d[0]['id'], None)
-                else:
-                    print("process already ended.")
             self.jobdata[tup] = multiprocessing.Process(target=self.getDeviceData, args=(d, self.results))
             self.jobdata[tup].start()

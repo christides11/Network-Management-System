@@ -11,7 +11,7 @@ async def RequestProbeList(sid):
     record = cursor.fetchall()
     li = []
     for x in range(len(record)):
-        li.append({"id": record[x][0], "name": record[x][1], "networkID": record[x][6]})
+        li.append({"id": record[x][0], "name": record[x][1], "networkID": record[x][6], "ipAddress": record[x][3]})
     cursor.close()
     await sio.emit('ReceiveProbeList', li, sid)
 

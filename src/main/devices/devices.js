@@ -82,6 +82,7 @@ function DevicesPage({socket}){
     }
 
     function ProbeRow({probe, k}) {
+        console.log(probe)
         return (
             <React.Fragment>
                 <TableRow sx={{ '& > *': { borderBottom: 'unset' } }}>
@@ -94,7 +95,15 @@ function DevicesPage({socket}){
                         {probe.name}
                     </TableCell>
                     <TableCell>
+                        {probe.ipAddress}
+                    </TableCell>
+                    <TableCell>
                         ...
+                    </TableCell>
+                    <TableCell>
+                        <Button variant="contained"> 
+                            <Link to={`/devices/${probe.id}`} key={probe.id}>View Details...</Link> 
+                        </Button>
                     </TableCell>
                 </TableRow>
 
@@ -156,7 +165,13 @@ function DevicesPage({socket}){
                                     PROBE NAME
                                 </TableCell>
                                 <TableCell>
+                                    PROBE IP
+                                </TableCell>
+                                <TableCell>
                                     # OF DEVICES
+                                </TableCell>
+                                <TableCell>
+
                                 </TableCell>
                             </TableRow>
                         </TableHead>
