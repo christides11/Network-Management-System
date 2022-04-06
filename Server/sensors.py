@@ -34,6 +34,12 @@ async def RequestDeviceSensors(sid, deviceid):
     result = helpers.fetchAllFromDB("SELECT * FROM public.devicesensor WHERE \"device_id\"={}".format(deviceid))
     await sio.emit("ReceiveDeviceSensorList", result, sid)
 
+# Request a single sensor attached to a device.
+@sio.event
+async def RequestDeviceSensor(sid, data):
+    result = helpers.fetchOneFromDB("SELECT * FROM public.devicesensor WHERE \"device_id\"={} AND \"sensor_id\"={} AND \"id\"={}".format(data['deviceid'], data['sensorid'], data['id']))
+    await sio.emit("ReceiveDeviceSensor", result, sid)
+
 @sio.event
 async def InsertDeviceSensorData(sid, data):
     now_utc = datetime.now(timezone.utc)
@@ -50,3 +56,6 @@ async def ReportDeviceSensorStatus(sid, data):
             helpers.executeOnDB("UPDATE public.devicesensor SET \"status\"=4, \"statusmessage\"=\'Sensor is down.\' WHERE \"device_id\"={} AND \"sensor_id\"={} AND \"id\"={}".format( data['deviceid'], data['sensorid'], data['devicesensorid'] ))
     else:
         helpers.executeOnDB("UPDATE public.devicesensor SET \"status\"=2, \"statusmessage\"=\'Sensor is up.\' WHERE \"device_id\"={} AND \"sensor_id\"={} AND \"id\"={}".format( data['deviceid'], data['sensorid'], data['devicesensorid'] ))
+
+
+### --- CHANNEL DATA --- ###

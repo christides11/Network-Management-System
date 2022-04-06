@@ -1,11 +1,12 @@
 import './device.css';
 import React, { useEffect, useCallback } from 'react';
-import { Table, TableBody, TableCell, TableContainer, TableHead, Paper, IconButton, Checkbox, TableRow, Typography, Box, Collapse, MenuItem, Button, Menu } from '@mui/material';
+import { Table, TableBody, TableCell, TableContainer, TableHead, Paper, IconButton, Checkbox, TableRow, Typography, Box, Collapse, MenuItem, Button, Menu} from '@mui/material';
 import { useParams } from "react-router-dom";
 import { CircularProgress } from '@mui/material';
 import useState from 'react-usestateref';
 import { socket } from '../../api/socket';
 import CreateSensorModal from './createSensorModal';
+import { Link, useNavigate } from 'react-router-dom';
 
 function SensorsTable({device, socket, sensorList}){
     const [anchorEl, setAnchorEl] = React.useState(null);
@@ -30,6 +31,11 @@ function SensorsTable({device, socket, sensorList}){
                 <TableRow  sx={{ '& > *': { borderBottom: 'unset' } }}>
                     <TableCell>
                         {row.name}
+                    </TableCell>
+                    <TableCell align="right">
+                        <Button> 
+                            <Link to={`/devices/${row.device_id}/sensor/${row.sensor_id}/id/${row.id}`} key={device.id}>View Sensor</Link> 
+                        </Button>
                     </TableCell>
                 </TableRow>
             </>
