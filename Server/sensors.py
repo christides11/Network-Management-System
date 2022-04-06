@@ -58,4 +58,14 @@ async def ReportDeviceSensorStatus(sid, data):
         helpers.executeOnDB("UPDATE public.devicesensor SET \"status\"=2, \"statusmessage\"=\'Sensor is up.\' WHERE \"device_id\"={} AND \"sensor_id\"={} AND \"id\"={}".format( data['deviceid'], data['sensorid'], data['devicesensorid'] ))
 
 
+### --- CHANNELS --- ###
+@sio.event
+async def GetSensorChannels(sid, data):
+    r = helpers.fetchAllFromDB("SELECT * FROM public.sensorchannel WHERE \"sensor_id\"={}".format(data))
+    await sio.emit("ReceiveSensorChannels", r, sid)
+
 ### --- CHANNEL DATA --- ###
+@sio.event
+async def GetLatestChannelData(sid, data):
+    r = helpers.fetchAllFromDB("SELECT DISTINCT ON (\"device_id\", \"sensor_id\", \"devicesensor_id\", \"channel_id\") \"device_id\", \"sensor_id\", \"devicesensor_id\", \"channel_id\", \"collected_at\", \"data\" FROM public.devicesensorchanneldata WHERE device_id={} AND sensor_id={} AND devicesensor_id={} ORDER BY \"device_id\", \"sensor_id\", \"devicesensor_id\", \"channel_id\", \"collected_at\" DESC".format( data["deviceid"], data["sensorid"], data["id"] ))
+    await sio.emit("ReceiveLatestChannelData", r, sid)
