@@ -41,6 +41,10 @@ from discovery import *
 async def connect(sid, environ):
     print("connect ", sid)
 
+@sio.event
+async def testCall(sid):
+    print("Test")
+
 # Probe requests the server to link it's socket.io connection
 # to the probe it's suppose to represent in the database.
 @sio.event
@@ -173,10 +177,10 @@ async def ReportDevicePingResult(sid, data):
         cursor.close()
     else:
         cursor = dbConn.cursor()
-        if record["status"] != 4:
+        if record["status"] != 4 and record["status"] != 3:
             cursor.execute("UPDATE public.device SET \"status\"=3, \"statusmessage\"=\'Device seems to be down.\' WHERE \"id\"={}".format(record["id"]))
         else:
-            cursor.execute("UPDATE public.device SET \"status\"=4, \"statusmessage\"=\'Device seems to be down.\' WHERE \"id\"={}".format(record["id"]))
+            cursor.execute("UPDATE public.device SET \"status\"=4, \"statusmessage\"=\'Device is down.\' WHERE \"id\"={}".format(record["id"]))
         dbConn.commit()
         cursor.close()
 

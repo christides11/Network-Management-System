@@ -5,8 +5,10 @@ import socketio
 import sys
 import socket
 import multiprocessing
+from threading import Thread
 import subprocess
 import os
+import asyncio
 from datetime import datetime
 from aiorun import run
 from getmac import get_mac_address
@@ -75,7 +77,10 @@ async def Probe_RunDeviceSensors(data):
         sensors[d[0]['sensor_id']].runSensor([d], OnDeviceSensorFinished)
 
 def OnDeviceSensorFinished(success, deviceid, sensorid, devicesensorid, channelData):
-    print("Sensor finished.")
+    loop = asyncio.get_event_loop()
+    loop.create_task(sio.emit('ReportDeviceSensorStatus', {'deviceid': deviceid, 'sensorid': sensorid, 'devicesensorid': devicesensorid, 'up': success}))
+    if success == False: return
+    loop.create_task( sio.emit('InsertDeviceSensorData', {'deviceid': deviceid, 'sensorid': sensorid, 'devicesensorid': devicesensorid, 'channeldata': channelData}) )
 
 @sio.event
 async def disconnect():

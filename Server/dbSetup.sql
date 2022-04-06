@@ -157,3 +157,14 @@ INSERT INTO public."network" VALUES (DEFAULT, 'network one', NULL, NULL);
 INSERT INTO public."device" VALUES (DEFAULT, 'localProbe', DEFAULT, 'localhost', '00:00:00:00:00:00', NULL, 1, NULL, NULL, 2);
 INSERT INTO public."sensor" VALUES (1, 'Ping', 'Sends an ICMP request from the probe to the device to monitor its availability.');
 INSERT INTO public."sensor" VALUES (2, 'SNMP Traffic', 'Monitors network traffic on a device using SNMP.');
+
+INSERT INTO public."sensorchannel" VALUES (1, -4, 'Downtime');
+INSERT INTO public."sensorchannel" VALUES (1, 0, 'Ping Time');
+INSERT INTO public."sensorchannel" VALUES (1, 1, 'Minimum');
+INSERT INTO public."sensorchannel" VALUES (1, 2, 'Maximum');
+INSERT INTO public."sensorchannel" VALUES (1, 3, 'Packet Loss');
+
+INSERT INTO public."sensorchannel" VALUES (2, -4, 'Downtime');
+INSERT INTO public."sensorchannel" VALUES (2, 0, 'Traffic Incoming (Bytes)');
+INSERT INTO public."sensorchannel" VALUES (2, 1, 'Traffic Outgoing (Bytes)');
+INSERT INTO public."sensorchannel" VALUES (2, -1, 'Total Traffic (Bytes)');
