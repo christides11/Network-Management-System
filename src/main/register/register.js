@@ -74,13 +74,15 @@ function RegisterPage({ socket, sessionID, setSessionID }) {
         </div>
 
         <div className="text-center mb-4">
-          <button
+          {/* Using the default triggers Bootstrap to RELOAD page when this is clicked */}
+          {/* <button
             onClick={TryRegister}
             type="submit"
             className="btn btn-primary w-25"
           >
             Register
-          </button>
+          </button> */}
+          <input type="button" onClick={TryRegister} class="btn btn-primary w-25" id="btnSeccion3" value="Register"/>
         </div>
 
         <div className="row mb-2">
