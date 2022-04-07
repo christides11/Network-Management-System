@@ -346,7 +346,8 @@ export default function Dis({socket}) {
                     }
                 </div>
                 <div className="text-center">
-                    <button onClick={RegisterScan} className='btn btn-success w-25 my-4'>🎉 All done. Register your job!</button>
+                    {/* Uses 'form' submit button by default which forces a refresh, which is what we do NOT want */}
+                    <input type="button" onClick={RegisterScan} class="btn btn-success w-25 my-4" id="btnSeccion3" value="🎉 All done. Register your job!"/>
                 </div>
             </form>
         </section>
