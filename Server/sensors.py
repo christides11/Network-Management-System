@@ -69,3 +69,8 @@ async def GetSensorChannels(sid, data):
 async def GetLatestChannelData(sid, data):
     r = helpers.fetchAllFromDB("SELECT DISTINCT ON (\"device_id\", \"sensor_id\", \"devicesensor_id\", \"channel_id\") \"device_id\", \"sensor_id\", \"devicesensor_id\", \"channel_id\", \"collected_at\", \"data\" FROM public.devicesensorchanneldata WHERE device_id={} AND sensor_id={} AND devicesensor_id={} ORDER BY \"device_id\", \"sensor_id\", \"devicesensor_id\", \"channel_id\", \"collected_at\" DESC".format( data["deviceid"], data["sensorid"], data["id"] ))
     await sio.emit("ReceiveLatestChannelData", r, sid)
+
+@sio.event
+async def GetChannelData(sid, data):
+    r = helpers.fetchAllFromDB("SET TIME ZONE 'UTC'; SELECT \"collected_at\", \"data\" FROM public.devicesensorchanneldata WHERE device_id={} AND sensor_id={} AND devicesensor_id={} AND channel_id={} AND \"collected_at\" > localtimestamp - INTERVAL '10 minutes';".format( data["deviceid"], data["sensorid"], data["id"], data["channelid"] ))
+    await sio.emit("ReceiveChannelData", {"channel_id": data["channelid"], "data": r}, sid)
