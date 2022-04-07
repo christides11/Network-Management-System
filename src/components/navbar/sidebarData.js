@@ -23,6 +23,12 @@ export const SidebarData = [
         cName: 'navText'
     },
     {
+        title: 'Credentials',
+        path: '/credentials',
+        icon: <FiIcons.FiAlertTriangle />,
+        cName: 'navText'
+    },
+    {
         title: 'Create Discovery Job',
         path: '/discovery',
         icon: <FiIcons.FiAlertTriangle />,
