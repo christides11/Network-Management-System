@@ -74,7 +74,7 @@ async def RequestRegistration(sid, data):
     record = helpers.fetchAllFromDB("SELECT username, password FROM user WHERE username = '{}'".format(data["username"]))
     if(len(record) > 0):
         await sio.emit('ReceiveRegistrationResult', {'result': False}, sid)
-    helpers.executeOnDB("INSERT INTO user (username, password) VALUES ('{}', '{}')".format(data["username"], data["password"]))
+    helpers.executeOnDB("INSERT INTO public.user (username, password, dateCreated) VALUES ('{}', '{}', '{}')".format(data["username"], data["password"], datetime.now()))
     await sio.emit('ReceiveRegistrationResult', {'result': True}, sid)
 
 # Verifies if the given sessionID is valid.

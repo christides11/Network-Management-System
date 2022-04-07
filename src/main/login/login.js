@@ -14,7 +14,7 @@ function LoginPage({ socket, sessionID, setSessionID }) {
   }
 
   function ReceiveLoginResult(data) {
-    console.log(data.sessionID);
+    console.log(data)
     if (data.sessionID == 0) return;
     setSessionID(data.sessionID);
     navigate("/summary");
@@ -25,9 +25,7 @@ function LoginPage({ socket, sessionID, setSessionID }) {
     return () => {
       socket.off("ReceiveLoginResult", ReceiveLoginResult);
     };
-  }, [socket]);
-
-  console.log(username);
+  }, []);
 
   return (
     <div className="LoginPage">
@@ -38,7 +36,7 @@ function LoginPage({ socket, sessionID, setSessionID }) {
             <img src={logo} className="img-fluid" alt=""/>
         </div>
         <div className="row">
-          <div class="form-group my-3 col-xs-12 col-lg-7 mx-auto">
+          <div className="form-group my-3 col-xs-12 col-lg-7 mx-auto">
             <label for="username">Username</label>
             <input
               type="text"
@@ -57,7 +55,7 @@ function LoginPage({ socket, sessionID, setSessionID }) {
 
         <div className="row">
           <div className="form-group mb-3 col-xs-12 col-lg-7 mx-auto">
-            <label for="password">Password</label>
+            <label htmlFor="password">Password</label>
             <input
               type="password"
               className="form-control"
@@ -80,13 +78,14 @@ function LoginPage({ socket, sessionID, setSessionID }) {
         </div>
 
         <div className="text-center">
-          <button
+          {/* Uses 'form' submit button by default which forces a refresh, which is what we do NOT want */}
+          {/* <button
             onClick={TryLogin}
-            type="submit"
             className="btn btn-primary w-25"
           >
             Log In
-          </button>
+          </button> */}
+          <input type="button" onClick={TryLogin} class="btn btn-primary w-25" id="btnSeccion3" value="Log In"/>
         </div>
       </form>
     </div>
