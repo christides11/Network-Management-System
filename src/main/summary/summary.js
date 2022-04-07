@@ -60,7 +60,7 @@ function SummaryPage({ socket, sessionID }) {
 
           <div className="card col-xs-12 col-md-6">
             <div className="card-body">
-              <h5 class="card-title">Total Servers / Routers</h5>
+              <h5 class="card-title">Total Sensors</h5>
               <p class="card-text">{sensors.length} sensors connected.</p>
             </div>
           </div>
