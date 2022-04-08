@@ -30,6 +30,11 @@ async def RegisterDeviceSensor(sid, data):
     await sio.emit('RegisterDeviceSensorResult', {"result": True}, sid)
 
 @sio.event
+async def RequestAllDeviceSensorList(sid):
+    result = helpers.fetchAllFromDB("SELECT * FROM public.devicesensor")
+    await sio.emit("ReceiveAllDeviceSensorList", result, sid)
+
+@sio.event
 async def RequestDeviceSensors(sid, deviceid):
     result = helpers.fetchAllFromDB("SELECT * FROM public.devicesensor WHERE \"device_id\"={}".format(deviceid))
     await sio.emit("ReceiveDeviceSensorList", result, sid)

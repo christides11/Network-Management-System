@@ -45,7 +45,7 @@ export default function App(){
                 <Route path="/discovery" element={ <LocalizationProvider dateAdapter={AdapterMoment}> <DiscoveryPage socket={socket} /> </LocalizationProvider>} />
                 <Route path="/discoveryjobs" element={<DiscoveryJobsPage socket={socket} />} />
                 <Route path="/discoverylog" element={<DiscoveryLog socket={socket} />} />
-                <Route path='/alerts' element={<Alerts/>} />
+                <Route path='/alerts' element={<Alerts socket={socket}/>} />
                 <Route path='/eventlog' element={<EventLog />} />
                 <Route
                     path="*"
