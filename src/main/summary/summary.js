@@ -7,31 +7,68 @@ function SummaryPage({ socket, sessionID }) {
 
   const [devices, setDevices] = useState([]);
   const [sensors, setSensors] = useState([]);
+  const [sensorsList, setSensorsList] = useState([]);
+  const [downDevices, setDownDevices] = useState(0);
+  const [downSensors, setDownSensors] = useState(0);
 
   useEffect(() => {
     socket.on("ReceiveDeviceList", receiveDeviceList);
     socket.on("ReceiveSensorList", receiveSensorList);
+
+    // Alerts
+    socket.on("ReceiveDeviceList", receiveDeviceList);
+    socket.on("ReceiveAllDeviceSensorList", receiveAllDeviceSensorList);
     refreshData();
 
     return () => {
       socket.off("ReceiveDeviceList", receiveDeviceList);
       socket.off("ReceiveSensorList", receiveSensorList);
+      socket.off("ReceiveAllDeviceSensorList", receiveAllDeviceSensorList);
     };
   }, [socket]);
 
+  useEffect(() => {
+    let sensorCount = 0;
+    // Update alerts for sensors
+    sensorsList.forEach((sensor, index) => {
+      if (sensor.statusmessage === "Sensor is down.") {
+        sensorCount++;
+      }
+    })
+    setDownSensors(sensorCount);
+
+    // Update alerts for devices
+    let deviceCount = 0;
+    devices.forEach((device, index) => {
+      if (device.statusmessage === "Device is down.") {
+        deviceCount++;
+      }
+    })
+    setDownDevices(deviceCount);
+  }, [devices, sensorsList]);
+
+
+  // Callback functions from the database
   const receiveDeviceList = useCallback((devicesList) => {
     console.log(devicesList);
     setDevices(devicesList);
   });
 
   const receiveSensorList = useCallback((sensorsList) => {
-    console.log(sensorsList);
     setSensors(sensorsList);
   });
 
+  const receiveAllDeviceSensorList = useCallback((devicesSensorsList) => {
+    console.log("devices")
+    console.log(devicesSensorsList);
+    setSensorsList(devicesSensorsList);
+  });
+
+  // Refresh data
   const refreshData = () => {
     socket.emit("RequestDeviceList");
     socket.emit("RequestSensorList");
+    socket.emit("RequestAllDeviceSensorList");
   };
 
   return (
@@ -46,7 +83,7 @@ function SummaryPage({ socket, sessionID }) {
       </div>
 
       <div className="container">
-        <section className="row">
+        <section className="row gy-2">
           <div className="card col-xs-12 col-md-6">
             <div className="card-body">
               <h5 class="card-title">Total Network Devices</h5>
@@ -61,8 +98,8 @@ function SummaryPage({ socket, sessionID }) {
 
           <div className="card col-xs-12 col-md-6">
             <div className="card-body">
-              <h5 class="card-title">Total Sensors</h5>
-              <p class="card-text">{sensors.length} sensors connected.{" "}
+              <h5 className="card-title">Total Sensors</h5>
+              <p className="card-text">{sensors.length} sensors connected.{" "}
               <a href="/devices" id="devices-link">
                   More details.
               </a>
@@ -71,7 +108,20 @@ function SummaryPage({ socket, sessionID }) {
           </div>
         </section>
 
-        <section className="row container"></section>
+        <section className="row gx-2">
+        <div className="card col-xs-12 col-md-6">
+            <div className="card-body">
+              <h5 className="card-title">Alerts</h5>
+              <p class="card-text">
+                {downDevices} device(s) down.{" "}
+                {" "}{downSensors} sensor(s) down.{" "}
+                <a href="/alerts" id="devices-link">
+                  More details.
+                </a>
+              </p>
+            </div>
+          </div>
+        </section>
       </div>
     </main>
   );

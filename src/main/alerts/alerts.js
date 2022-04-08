@@ -37,6 +37,7 @@ export default function Alerts({ socket }) {
         socket.emit("RequestAllDeviceSensorList");
     };
 
+    // Callback functions from the database
     const receiveDeviceList = useCallback((devicesList) => {
         setDevices(devicesList);
       });
