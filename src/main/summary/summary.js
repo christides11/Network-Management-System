@@ -15,6 +15,7 @@ function SummaryPage({ socket, sessionID }) {
 
     return () => {
       socket.off("ReceiveDeviceList", receiveDeviceList);
+      socket.off("ReceiveSensorList", receiveSensorList);
     };
   }, [socket]);
 
@@ -61,7 +62,11 @@ function SummaryPage({ socket, sessionID }) {
           <div className="card col-xs-12 col-md-6">
             <div className="card-body">
               <h5 class="card-title">Total Sensors</h5>
-              <p class="card-text">{sensors.length} sensors connected.</p>
+              <p class="card-text">{sensors.length} sensors connected.{" "}
+              <a href="/devices" id="devices-link">
+                  More details.
+              </a>
+              </p>
             </div>
           </div>
         </section>
