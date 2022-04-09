@@ -17,6 +17,11 @@ import { LocalizationProvider } from '@mui/lab';
 import AdapterMoment from '@mui/lab/AdapterMoment';
 import SensorPage from '../main/sensor/sensor';
 
+import NetmanLogo from '../components/images/Netman-logos_black.png';
+
+// NavBar 
+import {SidebarData} from "../components/navbar/sidebarData.js";
+
 export default function App(){
 
     const [sessionID, setSessionID] = useState(null);
@@ -34,8 +39,96 @@ export default function App(){
 
     return (
         <Router>
-            <Navbar />
-            <Routes>
+            {/* <Navbar /> <---- To restore previous version: Simply uncomment this line. Pickup everything inside <Routes> and Drag it out of Navbar. Finally, delete everything inside NavBar comments */}
+
+            {/* Beginning of Nav Bar */}
+            <div className="container-fluid">
+        <div className="row">
+            <div className="col-sm-auto bg-light sticky-top">
+                <div className="d-flex flex-sm-column flex-row flex-nowrap bg-light align-items-center sticky-top">
+                    {/* Main Link */}
+                    <a href="/" className="d-block p-3 link-dark text-decoration-none" title="" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-original-title="Icon-only">
+                        <img src={NetmanLogo} className="img-fluid" width={75} height={75}/>
+                    </a>
+
+                    {/* Start of Links */}
+                    <ul className="nav nav-pills nav-flush flex-sm-column flex-row flex-nowrap mb-auto mx-auto text-center align-items-center">
+
+                    {/* {SidebarData.map((item, index) => {
+                        return(
+                            <li key={index} className={item.cName}>
+                                <Link to={item.path}>
+                                    {item.icon}
+                                    <span>{item.title}</span>
+                                </Link>
+                            </li>
+                        )
+                    })} */}
+
+                        {/* Link Item */}
+                        <li className="nav-item">
+                            <a href="/summary" className="nav-link py-2 px-2" title="" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-original-title="Home">
+                                <i className="bi-house fs-1"></i>
+                                <p>Home</p>
+                            </a>
+                        </li>
+
+                        {/* Link Item */}
+                        <li>
+                            <a href="/devices" className="nav-link py-2 px-2" title="" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-original-title="Dashboard">
+                                <i className="bi bi-laptop fs-1"></i>
+                                <p>Devices</p>
+                            </a>
+                        </li>
+
+                        {/* Link Item */}
+                        <li>
+                            <a href="/alerts" className="nav-link py-2 px-2" title="" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-original-title="Dashboard">
+                                <i class="bi bi-alarm fs-1"></i>
+                                <p>Alerts</p>
+                            </a>
+                        </li>
+
+                        {/* Link Item */}
+                        <li>
+                            <a href="/credentials" className="nav-link py-2 px-2" title="" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-original-title="Dashboard">
+                                <i class="bi bi-credit-card-2-front fs-1"></i>
+                                <p>Credentials</p>
+                            </a>
+                        </li>
+
+                        {/* Link Item */}
+                        <li>
+                            <a href="/discovery" className="nav-link py-2 px-2" title="" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-original-title="Dashboard">
+                                <i class="bi bi-plus-circle fs-1"></i>
+                                <p>Create</p>
+                            </a>
+                        </li>
+
+                        {/* Link Item */}
+                        <li>
+                            <a href="/discoveryjobs" className="nav-link py-2 px-2" title="" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-original-title="Dashboard">
+                                <i class="bi bi-eye fs-1"></i>
+                                <p>View</p>
+                            </a>
+                        </li>
+
+                        {/* Link Item */}
+                        <li>
+                            <a href="/discoverylog" className="nav-link py-2 px-2" title="" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-original-title="Dashboard">
+                                <i class="bi bi-archive fs-1"></i>
+                                <p>Logs</p>
+                            </a>
+                        </li>
+
+                        {/* End of links */}
+                    </ul>
+                </div>
+            </div>
+            <div className="col-sm p-3 min-vh-100">
+                {/* content */}
+                <main>
+                <Routes>
                 <Route path="/" element={<LoginPage socket={socket} sessionID={sessionID} setSessionID={setSessionID} />} />
                 <Route path="/register" element={<RegisterPage socket={socket} sessionID={sessionID} setSessionID={setSessionID} />} />
                 <Route path="/summary" element={<SummaryPage socket={socket} sessionID={sessionID} />} />
@@ -56,6 +149,11 @@ export default function App(){
                     }
                 />
             </Routes>
+                </main>
+                <div></div>
+            </div>
+        </div>
+    </div>
         </Router>
     );
 }
