@@ -165,6 +165,6 @@ INSERT INTO public."sensorchannel" VALUES (1, 2, 'Maximum');
 INSERT INTO public."sensorchannel" VALUES (1, 3, 'Packet Loss');
 
 INSERT INTO public."sensorchannel" VALUES (2, -4, 'Downtime');
+INSERT INTO public."sensorchannel" VALUES (2, -1, 'Total Traffic (Bytes)');
 INSERT INTO public."sensorchannel" VALUES (2, 0, 'Traffic Incoming (Bytes)');
 INSERT INTO public."sensorchannel" VALUES (2, 1, 'Traffic Outgoing (Bytes)');
-INSERT INTO public."sensorchannel" VALUES (2, -1, 'Total Traffic (Bytes)');

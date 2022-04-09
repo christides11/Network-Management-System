@@ -106,10 +106,14 @@ def TryStartDiscoveryJob():
         if record[x]["scanfrequencytype"] == 0: # One off scan.
             cursor.execute("UPDATE public.\"scanParameters\" SET \"nextscantime\"=NULL WHERE id={}".format(record[x]["id"]))
         elif record[x]['scanfrequencytype'] == 1: # Hourly
-            temp = datetime.fromisoformat(record[x]['nextscantime']) + timedelta(hours=1)
+            #temp = datetime.fromisoformat(record[x]['nextscantime']) + timedelta(hours=1)
+            #TODO: Better handling of next time.
+            temp = now_utc + timedelta(hours=1)
             cursor.execute("UPDATE public.\"scanParameters\" SET \"nextscantime\"=\'{}\' WHERE id={}".format(temp, record[x]["id"]))
         elif record[x]['scanfrequencytype'] == 2: # Daily
-            temp = datetime.fromisoformat(record[x]['nextscantime']) + timedelta(days=1)
+            #temp = datetime.fromisoformat(record[x]['nextscantime']) + timedelta(days=1)
+            #TODO: Better handling of next time.
+            temp = now_utc + timedelta(days=1)
             cursor.execute("UPDATE public.\"scanParameters\" SET \"nextscantime\"=\'{}\' WHERE id={}".format(temp, record[x]["id"]))
         dbConn.commit()
         cursor.close()

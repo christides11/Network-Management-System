@@ -1,7 +1,10 @@
 from sensors.Sensor import Sensor
 import asyncio
 import multiprocessing
+import subprocess
 from pysnmp.entity.rfc3413.oneliner import cmdgen
+import json
+import pingparsing
 
 class SensorPing(Sensor):
 
@@ -12,13 +15,30 @@ class SensorPing(Sensor):
 
     def getDeviceData(self, d, results_q):
         try:
-            # TODO: Call ping command.
-            
-            # TODO: If error with data, throw exception
+            ping_parser = pingparsing.PingParsing()
+            transmitter = pingparsing.PingTransmitter()
+            transmitter.destination = d[0]['ipAddress']
+            transmitter.packet_size = d[0]['settings']['packetsize']
+            pingTime = d[0]['settings']['timeout']
+            if pingTime != 0: transmitter.timeout = str(pingTime) + "sec"
 
-            # TODO: Successful, get channel data
             channelData = {}
-
+            # Single Ping
+            if d[0]['settings']['method'] == 0:
+                transmitter.count = 1
+                result = transmitter.ping()
+                channelData[0] = rJson['rtt_avg'] # Ping Time
+                channelData[1] = rJson['rtt_min'] # Min
+                channelData[2] = rJson['rtt_max'] # Max
+                channelData[3] = int(rJson['packet_loss_rate']) # Packet Loss
+            else: # Multi ping
+                transmitter.count = d[0]['settings']['pingcount']
+                result = transmitter.ping()
+                rJson = ping_parser.parse(result).as_dict()
+                channelData[0] = rJson['rtt_avg'] # Ping Time
+                channelData[1] = rJson['rtt_min'] # Min
+                channelData[2] = rJson['rtt_max'] # Max
+                channelData[3] = int(rJson['packet_loss_rate']) # Packet Loss
             results_q.put( [True, d[0]['device_id'], d[0]['sensor_id'], d[0]['id'], channelData] )
         except Exception as e:
             results_q.put( [False, d[0]['device_id'], d[0]['sensor_id'], d[0]['id'], None] )

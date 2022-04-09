@@ -7,3 +7,4 @@ python-socketio==5.5.1
 psycopg2==2.9.3
 wmi_client_wrapper-py3==2018.3
 pysnmp==4.4.12
+pingparsing==1.4.0
