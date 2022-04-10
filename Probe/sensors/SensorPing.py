@@ -27,6 +27,7 @@ class SensorPing(Sensor):
             if d[0]['settings']['method'] == 0:
                 transmitter.count = 1
                 result = transmitter.ping()
+                rJson = ping_parser.parse(result).as_dict()
                 channelData[0] = rJson['rtt_avg'] # Ping Time
                 channelData[1] = rJson['rtt_min'] # Min
                 channelData[2] = rJson['rtt_max'] # Max
