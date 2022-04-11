@@ -48,26 +48,43 @@ export default function Alerts({ socket }) {
 
     // Styling functions
     const addStylingForDeviceStatus = () => {
+        let styles = []
         devicesList.forEach(device => {
-            if (device.statusmessage === "Device is down.") {
-                setDevicesStyling(devicesStyling => [...devicesStyling, "table-danger"]);
+            if (device.status === 1) {
+                styles.push("table-secondary") // unknown
+            }
+            else if (device.status === 2) {
+                styles.push("table-success") // success
+            } else if (device.status === 3) {
+                styles.push("table-warning") // warning
             }
             else {
-                setDevicesStyling(devicesStyling => [...devicesStyling, "table-success"]);
+                styles.push("table-danger") // down
             }
+
+            setDevicesStyling(styles);
         })
     }
 
     const addStylingForSensorStatus = () => {
+        let styles = []
         sensorsList.forEach(sensors => {
-            if (sensors.statusmessage === "Sensor is down.") {
-                setSensorStyling(sensorsStyling => [...sensorsStyling, "table-danger"]);
+            if (sensors.status === 1) {
+                styles.push("table-secondary") // unknown
+            }
+            else if (sensors.status === 2) {
+                styles.push("table-success") // success
+            } else if (sensors.status === 3) {
+                styles.push("table-warning") // warning
             }
             else {
-                setSensorStyling(sensorsStyling => [...sensorsStyling, "table-success"]);
+                styles.push("table-danger") // down
             }
+
+            setSensorStyling(styles);
         })
     }
+    // End of styling functions
 
     return (
         <div className="container-fluid mt-3">
