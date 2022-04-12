@@ -47,8 +47,10 @@ export default function App(){
             <div className="col-sm-auto bg-light sticky-top">
                 <div className="d-flex flex-sm-column flex-row flex-nowrap bg-light align-items-center sticky-top">
                     {/* Main Link */}
-                    <a href="/" className="d-block p-3 link-dark text-decoration-none" title="" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-original-title="Icon-only">
+                    <a className="d-block p-3 link-dark text-decoration-none" title="" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-original-title="Icon-only">
+                        <Link to={"/"}>
                         <img src={NetmanLogo} className="img-fluid" width={75} height={75}/>
+                        </Link>
                     </a>
 
                     {/* Start of Links */}
