@@ -1,6 +1,6 @@
 import './discoverylog.css';
 import React, { useState, useEffect, useCallback} from 'react';
-import { Table, TableBody, TableCell, TableContainer, TableHead, Paper, IconButton, Checkbox, TableRow, Typography, Box, Collapse } from '@mui/material';
+import { Table, TableBody, TableCell, TableContainer, TableHead, Paper, IconButton, Checkbox, TableRow, Typography, Box, Collapse, Button, Stack } from '@mui/material';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 
@@ -162,7 +162,6 @@ function DiscoveryLog({socket}){
     return (
         <div className="DiscoveryLog">
             <h1>Discovery Log</h1>
-            <button onClick={RequestScanLogs}>Update</button>
             {discoveryLogs != null &&
                 <TableContainer component={Paper}>
                      <Table aria-label="collapsible table">
@@ -186,7 +185,10 @@ function DiscoveryLog({socket}){
                 </TableContainer>
             }
             <br/>
-            <button onClick={RegisterDevices}>Register Device(s)</button>
+            <Stack direction="row" spacing={2}>
+                <Button variant="outlined" onClick={RequestScanLogs}>Refresh</Button>
+                <Button variant="contained" onClick={RegisterDevices}>Register Device(s)</Button>
+            </Stack>
         </div>
     );
 }
