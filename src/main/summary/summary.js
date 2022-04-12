@@ -78,7 +78,7 @@ function SummaryPage({ socket, sessionID }) {
 
       <div className="container text-center mb-5">
         <button className="btn btn-outline-info" onClick={refreshData}>
-          <i class="bi bi-arrow-clockwise"></i> Refresh
+          <i className="bi bi-arrow-clockwise"></i> Refresh
         </button>
       </div>
 
@@ -86,8 +86,8 @@ function SummaryPage({ socket, sessionID }) {
         <section className="row gy-2">
           <div className="card col-xs-12 col-md-6">
             <div className="card-body">
-              <h5 class="card-title">Total Network Devices</h5>
-              <p class="card-text">
+              <h5 className="card-title">Total Network Devices</h5>
+              <p className="card-text">
                 {devices.length} devices connected.{" "}
                 <a href="/devices" id="devices-link">
                   More details.
@@ -112,7 +112,7 @@ function SummaryPage({ socket, sessionID }) {
         <div className="card col-xs-12 col-md-6">
             <div className="card-body">
               <h5 className="card-title">Alerts</h5>
-              <p class="card-text">
+              <p className="card-text">
                 {downDevices} device(s) down.{" "}
                 {" "}{downSensors} sensor(s) down.{" "}
                 <a href="/alerts" id="devices-link">

@@ -37,7 +37,7 @@ function LoginPage({ socket, sessionID, setSessionID }) {
         </div>
         <div className="row">
           <div className="form-group my-3 col-xs-12 col-lg-7 mx-auto">
-            <label for="username">Username</label>
+            <label htmlFor="username">Username</label>
             <input
               type="text"
               className="form-control mx-auto d-block"
@@ -85,7 +85,7 @@ function LoginPage({ socket, sessionID, setSessionID }) {
           >
             Log In
           </button> */}
-          <input type="button" onClick={TryLogin} class="btn btn-primary w-25" id="btnSeccion3" value="Log In"/>
+          <input type="button" onClick={TryLogin} className="btn btn-primary w-25" id="btnSeccion3" value="Log In"/>
         </div>
       </form>
     </div>

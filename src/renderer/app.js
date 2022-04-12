@@ -84,7 +84,7 @@ export default function App(){
                         {/* Link Item */}
                         <li>
                             <a href="/alerts" className="nav-link py-2 px-2" title="" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-original-title="Dashboard">
-                                <i class="bi bi-alarm fs-1"></i>
+                                <i className="bi bi-alarm fs-1"></i>
                                 <p>Alerts</p>
                             </a>
                         </li>
@@ -92,7 +92,7 @@ export default function App(){
                         {/* Link Item */}
                         <li>
                             <a href="/credentials" className="nav-link py-2 px-2" title="" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-original-title="Dashboard">
-                                <i class="bi bi-credit-card-2-front fs-1"></i>
+                                <i className="bi bi-credit-card-2-front fs-1"></i>
                                 <p>Credentials</p>
                             </a>
                         </li>
@@ -100,7 +100,7 @@ export default function App(){
                         {/* Link Item */}
                         <li>
                             <a href="/discovery" className="nav-link py-2 px-2" title="" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-original-title="Dashboard">
-                                <i class="bi bi-plus-circle fs-1"></i>
+                                <i className="bi bi-plus-circle fs-1"></i>
                                 <p>Create</p>
                             </a>
                         </li>
@@ -108,7 +108,7 @@ export default function App(){
                         {/* Link Item */}
                         <li>
                             <a href="/discoveryjobs" className="nav-link py-2 px-2" title="" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-original-title="Dashboard">
-                                <i class="bi bi-eye fs-1"></i>
+                                <i className="bi bi-eye fs-1"></i>
                                 <p>View</p>
                             </a>
                         </li>
@@ -116,7 +116,7 @@ export default function App(){
                         {/* Link Item */}
                         <li>
                             <a href="/discoverylog" className="nav-link py-2 px-2" title="" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-original-title="Dashboard">
-                                <i class="bi bi-archive fs-1"></i>
+                                <i className="bi bi-archive fs-1"></i>
                                 <p>Logs</p>
                             </a>
                         </li>

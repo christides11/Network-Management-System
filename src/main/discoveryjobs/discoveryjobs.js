@@ -1,10 +1,11 @@
 import './discoveryjobs.css';
-import React, { useState, useEffect, useContext, useCallback} from 'react';
+import React, { useEffect, useContext, useCallback} from 'react';
 import { useNavigate } from 'react-router-dom';
+import useState from 'react-usestateref';
 
 function DiscoveryJobsPage({socket}){
 
-    const [discoveryJobs, setDiscoveryJobs] = useState(null);
+    const [discoveryJobs, setDiscoveryJobs, discoveryJobsRef] = useState([]);
 
     const receiveDiscoveryJobs = useCallback((data) => {
         console.log(data);
@@ -13,6 +14,8 @@ function DiscoveryJobsPage({socket}){
 
     useEffect(() => {
         socket.on("ReceiveDiscoveryScanList", receiveDiscoveryJobs)
+
+        if(discoveryJobsRef.current.length == 0) socket.emit("RequestDiscoveryScanList");
 
         return () => {
             socket.off("ReceiveDiscoveryScanList", receiveDiscoveryJobs)
