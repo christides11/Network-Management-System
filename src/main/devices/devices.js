@@ -97,9 +97,6 @@ function DevicesPage({socket}){
                         {probe.ipAddress}
                     </TableCell>
                     <TableCell>
-                        ...
-                    </TableCell>
-                    <TableCell>
                         {/* <Button variant="contained"> 
                             <Link to={`/devices/${probe.id}`} key={probe.id}>View Details...</Link> 
                         </Button> */}
@@ -177,9 +174,6 @@ function DevicesPage({socket}){
                                 </TableCell>
                                 <TableCell>
                                     PROBE IP
-                                </TableCell>
-                                <TableCell>
-                                    # OF DEVICES
                                 </TableCell>
                                 <TableCell>
 
