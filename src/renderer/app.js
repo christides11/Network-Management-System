@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate, Link } from 'react-router-dom';
 import LoginPage from '../main/login/login';
 import RegisterPage from '../main/register/register';
 import DiscoveryPage from '../main/discovery/discoveryTemp';
@@ -35,7 +35,7 @@ export default function App(){
         return () => { 
             socket.off("RegisterDeviceResult", receiveDeviceRegisterResult)
         }
-    }, []);
+    }, [socket]);
 
     return (
         <Router>
@@ -67,57 +67,71 @@ export default function App(){
 
                         {/* Link Item */}
                         <li className="nav-item">
-                            <a href="/summary" className="nav-link py-2 px-2" title="" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-original-title="Home">
+                            <a className="nav-link py-2 px-2" title="" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-original-title="Home">
+                                <Link to={"/summary"}>
                                 <i className="bi-house fs-1"></i>
                                 <p>Home</p>
+                                </Link>
                             </a>
                         </li>
 
                         {/* Link Item */}
                         <li>
-                            <a href="/devices" className="nav-link py-2 px-2" title="" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-original-title="Dashboard">
+                            <a className="nav-link py-2 px-2" title="" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-original-title="Dashboard">
+                                <Link to={"/devices"}>
                                 <i className="bi bi-laptop fs-1"></i>
                                 <p>Devices</p>
+                                </Link>
                             </a>
                         </li>
 
                         {/* Link Item */}
                         <li>
-                            <a href="/alerts" className="nav-link py-2 px-2" title="" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-original-title="Dashboard">
+                            <a className="nav-link py-2 px-2" title="" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-original-title="Dashboard">
+                                <Link to={"/alerts"}>
                                 <i className="bi bi-alarm fs-1"></i>
                                 <p>Alerts</p>
+                                </Link>
                             </a>
                         </li>
 
                         {/* Link Item */}
                         <li>
-                            <a href="/credentials" className="nav-link py-2 px-2" title="" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-original-title="Dashboard">
+                            <a className="nav-link py-2 px-2" title="" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-original-title="Dashboard">
+                                <Link to={"/credentials"}>
                                 <i className="bi bi-credit-card-2-front fs-1"></i>
                                 <p>Credentials</p>
+                                </Link>
                             </a>
                         </li>
 
                         {/* Link Item */}
                         <li>
-                            <a href="/discovery" className="nav-link py-2 px-2" title="" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-original-title="Dashboard">
+                            <a className="nav-link py-2 px-2" title="" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-original-title="Dashboard">
+                                <Link to={"/discovery"}>
                                 <i className="bi bi-plus-circle fs-1"></i>
                                 <p>Create</p>
+                                </Link>
                             </a>
                         </li>
 
                         {/* Link Item */}
                         <li>
-                            <a href="/discoveryjobs" className="nav-link py-2 px-2" title="" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-original-title="Dashboard">
+                            <a className="nav-link py-2 px-2" title="" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-original-title="Dashboard">
+                                <Link to={"/discoveryjobs"}>
                                 <i className="bi bi-eye fs-1"></i>
                                 <p>View</p>
+                                </Link>
                             </a>
                         </li>
 
                         {/* Link Item */}
                         <li>
-                            <a href="/discoverylog" className="nav-link py-2 px-2" title="" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-original-title="Dashboard">
+                            <a className="nav-link py-2 px-2" title="" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-original-title="Dashboard">
+                                <Link to={"/discoverylog"}>
                                 <i className="bi bi-archive fs-1"></i>
                                 <p>Logs</p>
+                                </Link>
                             </a>
                         </li>
 
