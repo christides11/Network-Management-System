@@ -19,6 +19,16 @@ async def RequestSNMPCredential(sid, credentialId):
     await sio.emit('ReceiveSNMPCredential', record, sid)
 
 @sio.event
+async def RegisterSNMPCredentials(sid, data):
+    result = {"result": True, "reason": ""}
+    if not data["name"] or not data["community"]:
+        result["result"] = False
+        result["reason"] = "Invalid name or community."
+    else:
+        helpers.executeOnDB("INSERT INTO public.\"SNMP_Credentials\" VALUES (DEFAULT, \'{}\', {}, \'{}\')".format(data["name"], data["version"], data["community"]))
+    await sio.emit('RegisterSNMPCredentialsResult', result, sid)
+
+@sio.event
 async def RequestWMICredentials(sid):
     cursor = dbConn.cursor()
     cursor.execute("SELECT * FROM public.\"WMI_Credentials\"")
@@ -32,3 +42,13 @@ async def RequestWMICredential(sid, credentialId):
     record = cursor.fetchone()
     cursor.close()
     await sio.emit('ReceiveWMICredential', record, sid)
+
+@sio.event
+async def RegisterWMICredentials(sid, data):
+    result = {"result": True, "reason": ""}
+    if not data["name"] or not data["username"] or not data["password"]:
+        result["result"] = False
+        result["reason"] = "Invalid name, username, or password."
+    else:
+        helpers.executeOnDB("INSERT INTO public.\"WMI_Credentials\" VALUES (DEFAULT, \'{}\', \'{}\', \'{}\')".format(data["name"], data["username"], data["password"]))
+    await sio.emit('RegisterWMICredentialsResult', result, sid)
