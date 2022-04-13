@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useEffect, useCallback } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, Link } from 'react-router-dom';
 import LoginPage from '../main/login/login';
 import RegisterPage from '../main/register/register';
@@ -16,6 +16,9 @@ import DiscoveryLog from '../main/discoverylog/discoverylog';
 import { LocalizationProvider } from '@mui/lab';
 import AdapterMoment from '@mui/lab/AdapterMoment';
 import SensorPage from '../main/sensor/sensor';
+import useState from 'react-usestateref';
+import Snackbar from '@mui/material/Snackbar';
+import MuiAlert from '@mui/material/Alert';
 
 import NetmanLogo from '../components/images/Netman-logos_black.png';
 
@@ -26,8 +29,20 @@ export default function App(){
 
     const [sessionID, setSessionID] = useState(null);
 
+    const [snackbarOpen, setSnackbarOpen, snackbarOpenRef] = useState(false);
+    const [snackbarSeverity, setSnackbarSeverity, snackbarSeverityRef] = useState("success");
+    const [snackbarMessage, setSnackbarMessage, snackbarMessageRef] = useState("");
+
     const receiveDeviceRegisterResult = useCallback((data) => {
         console.log(data);
+        if(data.result == false){
+            setSnackbarMessage("Device was not registered: " + data.reason);
+            setSnackbarSeverity("error");
+        }else{
+            setSnackbarMessage("Device was registered.");
+            setSnackbarSeverity("success");
+        }
+        setSnackbarOpen(true);
     }, []);
 
     useEffect(() => {
@@ -37,12 +52,29 @@ export default function App(){
         }
     }, [socket]);
 
+    const handleClose = (event, reason) => {
+        if (reason === 'clickaway') {
+          return;
+        }
+    
+        setSnackbarOpen(false);
+    };
+
+    const Alert = React.forwardRef(function Alert(props, ref) {
+        return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
+      });
+
     return (
         <Router>
             {/* <Navbar /> <---- To restore previous version: Simply uncomment this line. Pickup everything inside <Routes> and Drag it out of Navbar. Finally, delete everything inside NavBar comments */}
 
             {/* Beginning of Nav Bar */}
-            <div className="container-fluid">
+        <Snackbar open={snackbarOpen} autoHideDuration={5000} onClose={handleClose}>
+            <Alert onClose={handleClose} severity={snackbarSeverity} sx={{ width: '100%' }}>
+                {snackbarMessage}
+            </Alert>
+        </Snackbar>
+        <div className="container-fluid">
         <div className="row">
             <div className="col-sm-auto bg-light sticky-top">
                 <div className="d-flex flex-sm-column flex-row flex-nowrap bg-light align-items-center sticky-top">

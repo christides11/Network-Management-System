@@ -1,6 +1,6 @@
 import "./summary.css";
 import React, { useEffect, useState, useCallback } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 function SummaryPage({ socket, sessionID }) {
   let navigate = useNavigate();
@@ -89,9 +89,9 @@ function SummaryPage({ socket, sessionID }) {
               <h5 className="card-title">Total Network Devices</h5>
               <p className="card-text">
                 {devices.length} devices connected.{" "}
-                <a href="/devices" id="devices-link">
-                  More details.
-                </a>
+                <Link to={"/devices"} style={{ textDecoration: 'none' }}>
+                    More details.
+                </Link>
               </p>
             </div>
           </div>
@@ -100,9 +100,9 @@ function SummaryPage({ socket, sessionID }) {
             <div className="card-body">
               <h5 className="card-title">Total Sensors</h5>
               <p className="card-text">{sensors.length} sensors connected.{" "}
-              <a href="/devices" id="devices-link">
+              <Link to={"/devices"} style={{ textDecoration: 'none' }}>
                   More details.
-              </a>
+              </Link>
               </p>
             </div>
           </div>
@@ -115,9 +115,9 @@ function SummaryPage({ socket, sessionID }) {
               <p className="card-text">
                 {downDevices} device(s) down.{" "}
                 {" "}{downSensors} sensor(s) down.{" "}
-                <a href="/alerts" id="devices-link">
+                <Link to={"/alerts"} style={{ textDecoration: 'none' }}>
                   More details.
-                </a>
+                </Link>
               </p>
             </div>
           </div>

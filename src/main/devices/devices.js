@@ -97,10 +97,9 @@ function DevicesPage({socket}){
                         {probe.ipAddress}
                     </TableCell>
                     <TableCell>
-                        {/* <Button variant="contained"> 
+                        <Button variant="text"> 
                             <Link to={`/devices/${probe.id}`} key={probe.id}>View Details...</Link> 
-                        </Button> */}
-                        <button className="btn btn-info" onClick={() => navigate(`/devices/${probe.id}`)} key={probe.id}>View Details</button>
+                        </Button>
                     </TableCell>
                 </TableRow>
 
@@ -137,10 +136,9 @@ function DevicesPage({socket}){
                                                 <TableCell>{device.name}</TableCell>
                                                 <TableCell>{device.ipAddress}</TableCell>
                                                 <TableCell align="right">
-                                                    {/* <Button variant="contained"> 
+                                                    <Button variant="text"> 
                                                         <Link to={`/devices/${device.id}`} key={device.id}>View Details...</Link> 
-                                                    </Button> */}
-                                                    <button className="btn btn-info" onClick={() => navigate(`/devices/${device.id}`)} key={device.id}>View Details</button>
+                                                    </Button>
                                                 </TableCell>
                                             </TableRow>
                                         ))
@@ -159,10 +157,6 @@ function DevicesPage({socket}){
         <div className="DevicesPage">
             <h1>Devices Page</h1>
             <hr className="w-25"></hr>
-            <div className="text-center my-2">
-                <button className="btn btn-primary mx-auto" onClick={RefreshDeviceList}>Refresh</button>
-            </div>
-            <ul>
             {probeList != null &&
                 <TableContainer component={Paper}>
                     <Table aria-label="collapsible table">
@@ -189,7 +183,8 @@ function DevicesPage({socket}){
                     </Table>
                 </TableContainer>
             }
-            </ul>
+            <br/>
+            <Button variant="contained" onClick={RefreshDeviceList}>Refresh</Button>
         </div>
     );
 }

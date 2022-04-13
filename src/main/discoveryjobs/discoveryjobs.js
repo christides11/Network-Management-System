@@ -126,7 +126,7 @@ function DiscoveryJobsPage({socket}){
                     </TableBody>
                 </Table>
             </TableContainer>
-            <Button onClick={RequestScanList}>Refresh</Button>
+            <Button variant="contained" onClick={RequestScanList}>Refresh</Button>
         </div>
     );
 }
