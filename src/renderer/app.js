@@ -24,6 +24,7 @@ import NetmanLogo from '../components/images/Netman-logos_black.png';
 
 // NavBar 
 import {SidebarData} from "../components/navbar/sidebarData.js";
+import CredentialsPage from '../main/credentials/credentials';
 
 export default function App(){
 
@@ -180,6 +181,7 @@ export default function App(){
                 <Route path="/" element={<LoginPage socket={socket} sessionID={sessionID} setSessionID={setSessionID} />} />
                 <Route path="/register" element={<RegisterPage socket={socket} sessionID={sessionID} setSessionID={setSessionID} />} />
                 <Route path="/summary" element={<SummaryPage socket={socket} sessionID={sessionID} />} />
+                <Route path="/credentials" element={<CredentialsPage socket={socket} />} />
                 <Route path="/devices" element={<DevicesPage socket={socket} />} />
                 <Route path="/devices/:deviceId" element={<DevicePage socket={socket} />} />
                 <Route path="/devices/:deviceId/sensor/:sensorId/id/:id" element={<SensorPage socket={socket} />} />
