@@ -4,7 +4,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import moment from 'moment';
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
-import { InputLabel, Select, MenuItem, Checkbox, FormControlLabel, FormGroup, TableContainer, Paper, Table, TableHead, TableRow, TableBody, TableCell, IconButton, Collapse, Typography, Button, CircularProgress } from '@mui/material';
+import { InputLabel, Select, MenuItem, Checkbox, FormControlLabel, FormGroup, TableContainer, Paper, Table, TableHead, TableRow, TableBody, TableCell, IconButton, Collapse, Typography, Button, CircularProgress, LinearProgress } from '@mui/material';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import { Box } from '@mui/system';
@@ -18,6 +18,7 @@ function DevicesPage({socket}){
     const [probeDeviceList, setProbeDeviceList, probeDeviceListRef] = useState([]);
     const [open, setOpen, openRef] = useState([]);
     const [temp, setTemp, tempRef] = useState(0);
+    const [loadingProbes, setLoadingProbes, loadingProbesRef] = useState(true);
 
     const receiveProbeList = useCallback((data) => {
         if(probeDeviceListRef.current.length != data.length){
@@ -29,6 +30,7 @@ function DevicesPage({socket}){
             setProbeDeviceList(t);
         }
         setProbeList(data);
+        setLoadingProbes(false);
     });
 
     const receiveDeviceList = useCallback((data) => {
@@ -76,6 +78,8 @@ function DevicesPage({socket}){
     }
 
     function RefreshDeviceList(){
+        setLoadingProbes(true);
+        socket.emit("RequestProbeList");
         for(let i = 0; i < probeListRef.current.length; i++){
             GetProbeDeviceList(probeListRef.current[i].id);
         }
@@ -184,13 +188,18 @@ function DevicesPage({socket}){
                             </TableRow>
                         </TableHead>
                         <TableBody>
-                            {probeList.map((probe, idx) => (
+                            {loadingProbes == false &&
+                             probeList.map((probe, idx) => (
                                 <ProbeRow key={idx} probe={probe} k={idx}></ProbeRow>
                             ))
                             }
                         </TableBody>
                     </Table>
                 </TableContainer>
+            }
+            {
+                loadingProbes &&
+                <LinearProgress></LinearProgress>
             }
             <br/>
             <Button variant="contained" onClick={RefreshDeviceList}>Refresh</Button>
