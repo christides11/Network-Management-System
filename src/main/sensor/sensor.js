@@ -2,7 +2,7 @@ import './sensor.css';
 import React, { useEffect, useCallback } from 'react';
 import { useParams } from "react-router-dom";
 import useState from 'react-usestateref';
-import { Table, TableBody, TableCell, TableContainer, TableHead, Paper, IconButton, Checkbox, TableRow, Typography, Box, Collapse, MenuItem, Button, Menu, CircularProgress, Grid} from '@mui/material';
+import { Table, TableBody, TableCell, TableContainer, TableHead, Paper, IconButton, Checkbox, TableRow, Typography, Box, Collapse, MenuItem, Button, Menu, CircularProgress, Grid, LinearProgress} from '@mui/material';
 import moment from 'moment';
 import { LineChart, Line, CartesianGrid, XAxis, YAxis, Tooltip } from 'recharts';
 
@@ -15,6 +15,8 @@ function SensorPage({socket}){
     const [latestChannelData, setLatestChannelData, latestChannelDataRef] = useState({})
     const [channelData, setTimeChannelData, timeChannelDataRef] = useState({})
     const [lastTime, setLastTime, lastTimeRef] = useState("")
+
+    const [loading, setLoading, loadingRef] = useState(true);
 
     const receiveDevice = useCallback((data) => {
         setDevice(data);
@@ -42,6 +44,7 @@ function SensorPage({socket}){
     });
 
     const receiveChannelData = useCallback((data) => {
+        if(data["channel_id"] == 0) console.log("Receive for 0.");
         setTimeChannelData(prevState => ({
             ...prevState,
             [data["channel_id"]]: data["data"]
@@ -72,14 +75,20 @@ function SensorPage({socket}){
     }, [socket]);
 
     useEffect(() => {
-
-    }, []);
-
-    function refreshChannels(){
         for(const [key, value] of Object.entries(latestChannelDataRef.current)){
             socket.emit("GetChannelData", {"deviceid": params.deviceId, "sensorid": params.sensorId, "id": params.id, "channelid": key})
         }
-        socket.emit("RequestSensor", params.sensorId)
+    }, [latestChannelData]);
+
+    useEffect(() => {
+        if(Object.keys(latestChannelDataRef.current).length == 0) socket.emit("GetLatestChannelData", {"deviceid": params.deviceId, "sensorid": params.sensorId, "id": params.id} )
+    }, []);
+
+    function refreshChannels(){
+        //for(const [key, value] of Object.entries(latestChannelDataRef.current)){
+        //    socket.emit("GetChannelData", {"deviceid": params.deviceId, "sensorid": params.sensorId, "id": params.id, "channelid": key})
+        //}
+        //socket.emit("RequestSensor", params.sensorId)
         socket.emit("GetLatestChannelData", {"deviceid": params.deviceId, "sensorid": params.sensorId, "id": params.id} )
     }
 
@@ -96,9 +105,7 @@ function SensorPage({socket}){
       }
 
     function ChannelChart({channel, k}){
-
         let cdd = channelData[channel];
-        console.log(cdd);
 
         return (
             <Grid item xs={5}>
@@ -106,7 +113,7 @@ function SensorPage({socket}){
                     <>
                         <Typography>{sensorchannels[channel]["name"]}</Typography>
                         <LineChart width={600} height={300} data={cdd}>
-                            <Line type="monotone" dataKey="data" stroke="#8884d8" />
+                            <Line connectNulls type="monotone" dataKey="data" stroke="#8884d8" />
                             <CartesianGrid stroke="#ccc" strokeDasharray="5 5"  />
                             <XAxis dataKey="collected_at" domain={[cdd[0]["collected_at"], cdd[cdd.length - 1]["collected_at"]]} tickFormatter={timeStr => moment(timeStr).format('HH:mm:ss')}/>
                             <YAxis domain={[cdd[0]["data"][0], cdd[cdd.length - 1]["data"]][0]} tickFormatter={(value) => new Intl.NumberFormat('en', { notation: "compact", compactDisplay: "short" }).format(value)} />
@@ -144,7 +151,7 @@ function SensorPage({socket}){
         <div className="SensorPage">
             {(sensor == null || device == null || devicesensor == null) &&
                 <>
-                    <CircularProgress />
+                    <LinearProgress/>
                 </>
             }
             {(sensor != null && device != null && devicesensor != null) &&

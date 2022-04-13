@@ -1,5 +1,6 @@
 import { LinearProgress } from '@mui/material';
-import React, {useState, useEffect, useCallback} from 'react'
+import React, {useEffect, useCallback} from 'react'
+import useState from 'react-usestateref';
 
 export default function Alerts({ socket }) {
 

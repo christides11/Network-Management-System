@@ -17,7 +17,7 @@ function DevicesPage({socket}){
     const [probeList, setProbeList, probeListRef] = useState([]);
     const [probeDeviceList, setProbeDeviceList, probeDeviceListRef] = useState([]);
     const [open, setOpen, openRef] = useState([]);
-    const [temp, setTemp, tempRef] = useState(0);
+    const [temp, setTemp, tempRef] = useState(0); // Force reload of page.
     const [loadingProbes, setLoadingProbes, loadingProbesRef] = useState(true);
 
     const receiveProbeList = useCallback((data) => {
@@ -33,7 +33,9 @@ function DevicesPage({socket}){
         setLoadingProbes(false);
     });
 
-    const receiveDeviceList = useCallback((data) => {
+    const receiveDeviceListFromProbe = useCallback((data) => {
+        console.log("Receive")
+        console.log(data);
         for(let i = 0; i < probeListRef.current.length; i++){
             if(probeListRef.current[i].id != data.probeID) continue;
             let temp = probeDeviceListRef.current;
@@ -45,15 +47,21 @@ function DevicesPage({socket}){
 
     useEffect(() => {
         socket.on("ReceiveProbeList", receiveProbeList)
-        socket.on("ReceiveDeviceList", receiveDeviceList)
+        socket.on("ReceiveDeviceListFromProbe", receiveDeviceListFromProbe)
         
-        if(probeList.length == 0) socket.emit("RequestProbeList");
+        if(probeListRef.current.length == 0) socket.emit("RequestProbeList");
 
         return () => {
             socket.off("ReceiveProbeList", receiveProbeList)
-            socket.off("ReceiveDeviceList", receiveDeviceList)
+            socket.off("ReceiveDeviceListFromProbe", receiveDeviceListFromProbe)
         }
     }, [socket]);
+
+    useEffect(() => {
+        for(let i = 0; i < probeListRef.current.length; i++){
+            socket.emit("RequestDeviceListFromProbe", probeListRef.current[i].id);
+        }
+    }, [probeList]);
 
     useEffect(() => {
         if(openRef.current.length == probeList.length) return;
@@ -80,15 +88,12 @@ function DevicesPage({socket}){
     function RefreshDeviceList(){
         setLoadingProbes(true);
         socket.emit("RequestProbeList");
-        for(let i = 0; i < probeListRef.current.length; i++){
+        /*for(let i = 0; i < probeListRef.current.length; i++){
             GetProbeDeviceList(probeListRef.current[i].id);
-        }
+        }*/
     }
 
     function ProbeRow({probe, k}) {
-
-        console.log(probe);
-
         return (
             <React.Fragment>
                 <TableRow sx={{ '& > *': { borderBottom: 'unset' } }}>

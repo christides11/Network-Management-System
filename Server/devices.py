@@ -19,7 +19,7 @@ async def RequestProbeList(sid):
 @sio.event
 async def RequestDeviceListFromProbe(sid, probeID):
     result = helpers.fetchAllFromDB("SELECT * FROM public.device WHERE \"parent\" = {}".format(probeID))
-    await sio.emit('ReceiveDeviceList', {"devices": result, "probeID": probeID}, sid)
+    await sio.emit('ReceiveDeviceListFromProbe', {"devices": result, "probeID": probeID}, sid)
 
 # returns a list of all devices in the database.
 @sio.event
