@@ -2,7 +2,7 @@ import './discoveryjobs.css';
 import React, { useEffect, useContext, useCallback} from 'react';
 import { useNavigate } from 'react-router-dom';
 import useState from 'react-usestateref';
-import { Button, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, IconButton, Collapse, Box } from '@mui/material';
+import { Button, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, IconButton, Collapse, Box, LinearProgress } from '@mui/material';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 
@@ -10,9 +10,10 @@ function DiscoveryJobsPage({socket}){
 
     const [discoveryJobs, setDiscoveryJobs, discoveryJobsRef] = useState([]);
     const [open, setOpen, openRef] = useState([]);
+    const [loadingStatus, setLoadingStatus, loadingStatusRef] = useState(true);
 
     const receiveDiscoveryJobs = useCallback((data) => {
-        console.log(data);
+        //console.log(data);
 
         // make nextTimeValue in a human readable format
         data.forEach((job) => {
@@ -24,6 +25,7 @@ function DiscoveryJobsPage({socket}){
         })
 
         setDiscoveryJobs(data);
+        setLoadingStatus(false);
       }, []);
 
     useEffect(() => {
@@ -47,6 +49,7 @@ function DiscoveryJobsPage({socket}){
 
     function RequestScanList(){
         socket.emit('RequestDiscoveryScanList');
+        setLoadingStatus(true);
     }
 
     function SetRowOpen(index, probeID){
@@ -111,6 +114,8 @@ function DiscoveryJobsPage({socket}){
             <h1>Discovery Jobs Page</h1>
             <TableContainer component={Paper}>
                 <Table>
+                    {loadingStatus == false &&
+                    <>
                     <TableHead>
                         <TableRow>
                             <TableCell>
@@ -134,8 +139,15 @@ function DiscoveryJobsPage({socket}){
                             ))
                         }
                     </TableBody>
+                    </>
+                    }
                 </Table>
             </TableContainer>
+            {
+                loadingStatus &&
+                <LinearProgress/>
+            }
+            <br/>
             <Button variant="contained" onClick={RequestScanList}>Refresh</Button>
         </div>
     );
