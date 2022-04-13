@@ -13,6 +13,16 @@ function DiscoveryJobsPage({socket}){
 
     const receiveDiscoveryJobs = useCallback((data) => {
         console.log(data);
+
+        // make nextTimeValue in a human readable format
+        data.forEach((job) => {
+            const dateString = job.nextscantime;
+
+            const options = { year: "numeric", month: "long", day: "numeric", hour: "numeric", minute: "numeric", second: "numeric"};
+            const newDate = new Date(dateString).toLocaleDateString(undefined, options);
+            job.nextscantime = newDate;
+        })
+
         setDiscoveryJobs(data);
       }, []);
 
