@@ -14,7 +14,7 @@ export default function Dis({socket, openSnackbar}) {
 
     // Get needed values to fill selection and listeners
     useEffect(() => {
-        socket.on("Frontend_RegisterDiscoveryScanResult", handleRegisterScanResult)
+        //socket.on("Frontend_RegisterDiscoveryScanResult", handleRegisterScanResult)
         socket.on("ReceiveSNMPCredentials", receiveSNMPCredentials)
         socket.on("ReceiveWMICredentials", receiveWMICredentials)
         socket.on("ReceiveProbeList", receiveProbeList)
@@ -24,7 +24,7 @@ export default function Dis({socket, openSnackbar}) {
         socket.emit("RequestProbeList");
 
         return () => {
-            socket.off("Frontend_RegisterDiscoveryScanResult", handleRegisterScanResult)
+            //socket.off("Frontend_RegisterDiscoveryScanResult", handleRegisterScanResult)
             socket.off("ReceiveSNMPCredentials", receiveSNMPCredentials)
             socket.off("ReceiveWMICredentials", receiveWMICredentials)
             socket.off("ReceiveProbeList", receiveProbeList)

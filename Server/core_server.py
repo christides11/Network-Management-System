@@ -140,7 +140,7 @@ async def DeviceSensorJob():
         await asyncio.sleep(10)
         now_utc = datetime.now(timezone.utc)
         for item in probes.keys():
-            devices = helpers.fetchAllFromDB("SELECT ds.device_id, ds.sensor_id, ds.id, d.\"ipAddress\", ds.settings, d.\"snmpCredentials\", d.\"wmiCredentials\", ds.\"nexttime\" FROM public.device d, public.devicesensor ds WHERE d.id=ds.device_id AND d.\"networkID\"={} AND d.\"parent\"={} AND ds.\"nexttime\"<=\'{}\'".format(network, item, now_utc))
+            devices = helpers.fetchAllFromDB("SELECT ds.device_id, ds.sensor_id, ds.id, d.\"ipAddress\", ds.settings, d.\"snmpCredentials\", d.\"wmiCredentials\", ds.\"nexttime\" FROM public.device d, public.devicesensor ds WHERE d.id=ds.device_id AND d.\"networkID\"={} AND (d.\"parent\"={} OR d.id={}) AND ds.\"nexttime\"<=\'{}\'".format(network, item, item, now_utc))
             for device in devices:
                 data = [device, None, None]
                 if data[0]['snmpCredentials'] != None:
@@ -161,6 +161,7 @@ async def DeviceStatusJob():
             for r in record:
                 loop = asyncio.get_event_loop()
                 loop.create_task(sio.emit('Probe_TryPingDevice', {"ip": r['ipAddress']}, probes[item]["sid"]))
+            loop.create_task(sio.emit('Probe_TryPingDevice', {"ip": "localhost"}, probes[item]["sid"]))
         await asyncio.sleep(300)
 
 # Probe reports the status of a single device.
