@@ -107,6 +107,7 @@ export default function Alerts({ socket }) {
                     <div className="card-body">
                         {/* Start of table */}
                         <table className="table table-hover">
+                        <caption>Green = Working | Red = Down | Yellow = Warning | Grey = Unspecified.</caption>
                             <thead>
                                 <tr>
                                     <th scope="col">#</th>
@@ -142,6 +143,7 @@ export default function Alerts({ socket }) {
                     <div className="card-body">
                         {/* Start of table */}
                         <table className="table table-hover">
+                        <caption>Green = Working | Red = Down | Yellow = Warning | Grey = Unspecified.</caption>
                          <thead>
                                 <tr>
                                     <th scope="col">#</th>
