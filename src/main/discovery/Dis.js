@@ -9,7 +9,7 @@ import "react-datepicker/dist/react-datepicker.css";
 
 import { DateTimePicker, TimePicker } from '@mui/lab'; // Time Picker
 
-export default function Dis({socket}) {
+export default function Dis({socket, openSnackbar}) {
     let navigate = useNavigate();
 
     // Get needed values to fill selection and listeners
@@ -64,7 +64,7 @@ export default function Dis({socket}) {
 
     // Functions
     const handleRegisterScanResult = useCallback((data) => {
-        console.log(data.result);
+        //console.log(data.result);
         if(data.result){
             navigate("/discoveryjobs");
         }
@@ -86,16 +86,18 @@ export default function Dis({socket}) {
         setRepeatType(event.target.value);
     };
 
+    function isEmptyOrSpaces(str){
+        return str === null || str.match(/^ *$/) !== null;
+    }
+
     // End of Helper Functions
 
     // Register Scan Function
     const RegisterScan = () => {
-        console.log("REGISTER SCAN")
         let val = moment();
-         // Only care about minutes.
         if(repeatType == 0){
             val = repeatValue;
-        }else if(repeatType == 1){
+        }else if(repeatType == 1){ // Only care about minutes.
             val.set('minutes', repeatValue.minutes()).set('second', 0);//.duration(repeatValue.minutes(), "minutes");//repeatValue.minutes();
         }else if(repeatType == 2){ // Only care about hours & minutes.
             val.set('hour', repeatValue.hours()).set('minute', repeatValue.minutes()).set('second', 0);

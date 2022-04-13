@@ -46,10 +46,24 @@ export default function App(){
         setSnackbarOpen(true);
     }, []);
 
+    const receiveDiscoveryRegisterResult = useCallback((data) => {
+        console.log(data);
+        if(data.result == false){
+            setSnackbarMessage("Job was not registered: " + data.reason);
+            setSnackbarSeverity("error");
+        }else{
+            setSnackbarMessage("Scan register successful.");
+            setSnackbarSeverity("success");
+        }
+        setSnackbarOpen(true);
+    }, []);
+
     useEffect(() => {
         socket.on("RegisterDeviceResult", receiveDeviceRegisterResult)
+        socket.on("Frontend_RegisterDiscoveryScanResult", receiveDiscoveryRegisterResult)
         return () => { 
             socket.off("RegisterDeviceResult", receiveDeviceRegisterResult)
+            socket.off("Frontend_RegisterDiscoveryScanResult", receiveDiscoveryRegisterResult)
         }
     }, [socket]);
 
@@ -64,6 +78,12 @@ export default function App(){
     const Alert = React.forwardRef(function Alert(props, ref) {
         return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
       });
+
+    function openSnackbar (message, severity){
+        setSnackbarMessage(message);
+        setSnackbarSeverity(severity);
+        setSnackbarOpen(true);
+    };
 
     return (
         <Router>

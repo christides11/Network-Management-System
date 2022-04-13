@@ -15,7 +15,10 @@ async def RequestDiscoveryScanList(sid):
 async def RegisterDiscoveryScan(sid, data):
     cursor = dbConn.cursor()
     result = False
+    resultReason = ""
     try:
+        if not data['discoveryName'] or not data['ipStartRanges'] or not data['ipEndRanges']:
+            raise Exception("Empty input is not valid.")
         dt = datetime.fromtimestamp(data['nextscantime'] / 1000.0, tz = timezone.utc)
         st = 'INSERT INTO public."scanParameters" VALUES (DEFAULT, {}, \'{}\', {}, {}, {}, {}, {}, {}, {}, {}, \'{}\', {}, {}, ARRAY {}, ARRAY {}, ARRAY {}, ARRAY {}, ARRAY {})'.format(data['network'], data['discoveryName'], data['icmpRespondersOnly'], data['snmpTimeout'], data['scanTimeout'], data['snmpRetries'], data['wmiRetries'], 
             data['hopCount'], data['discoveryTimeout'], data['scanfrequencytype'], dt, data['probeID'], data['scanType'], data['ipStartRanges'],
@@ -24,12 +27,13 @@ async def RegisterDiscoveryScan(sid, data):
         dbConn.commit()
         result = True
     except Exception as e:
-        print("Error registering scan {}".format(data['discoveryName']))
-        print(e)
+        resultReason = str(e)
+        #print("Error registering scan {}".format(data['discoveryName']))
+        #print(e)
     finally:
         cursor.close()
         print("Sending result: ", result)
-        await sio.emit('Frontend_RegisterDiscoveryScanResult', {'result': result}, sid)
+        await sio.emit('Frontend_RegisterDiscoveryScanResult', {'result': result, 'reason': resultReason}, sid)
 
 # Receive a scan log from a probe then add it to the database.
 @sio.event
