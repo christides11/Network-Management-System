@@ -23,9 +23,14 @@ function CredentialsPage({socket}){
         setLoadingStatus(false);
     }, []);
 
+    const receiveSNMPCredentialsResult = useCallback((data) => {
+        socket.emit("RequestSNMPCredentials");
+    }, []);
+
     useEffect(() => {
         socket.on("ReceiveSNMPCredentials", receiveSNMPCredentials)
         socket.on("ReceiveWMICredentials", receiveWMICredentials)
+        socket.on("RegisterSNMPCredentialsResult", receiveSNMPCredentialsResult)
 
         if(snmpCredentialsRef.current.length == 0) socket.emit("RequestSNMPCredentials");
         if(wmiCredentialsRef.current.length == 0) socket.emit("RequestWMICredentials");
@@ -33,6 +38,7 @@ function CredentialsPage({socket}){
         return () => {
             socket.off("ReceiveSNMPCredentials", receiveSNMPCredentials)
             socket.off("ReceiveWMICredentials", receiveWMICredentials)
+            socket.off("RegisterSNMPCredentialsResult", receiveSNMPCredentialsResult)
         }
     }, [socket]);
 
@@ -55,7 +61,6 @@ function CredentialsPage({socket}){
     const addSNMPCredential = () => {
         socket.emit('RegisterSNMPCredentials', snmpSettingsRef.current)
         setSNMPOpen(false);
-        //RefreshCredentialsLists();
     }
 
     function SNMPRow({job, k}) {
@@ -199,7 +204,7 @@ function CredentialsPage({socket}){
                                 <FormControlLabel value={3} control={<Radio />} label="v3" />
                             </RadioGroup>
                             <TextField id="outlined-basic" label="Community" variant="outlined" name="community" value={snmpSettings["community"]} onChange={handleSNMPSettingsChange} />
-                            <Button variant="contained" color="primary" type="submit" onClick={addSNMPCredential}>Create</Button>
+                            <Button variant="contained" color="primary" onClick={addSNMPCredential}>Create</Button>
                         </FormControl>
                     </Box>
             </Dialog>

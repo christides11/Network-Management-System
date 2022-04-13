@@ -93,7 +93,7 @@ function CreateSensorModal({device, open, handleClose, socket}){
                             <SensorSettings sensordata={sensorList[sensorindex]} socket={socket} sensorSettings={sensorSettings} setSensorSettings={setSensorSettings} />
                         </>
                     }
-                    <Button variant="contained" color="primary" type="submit" onClick={handleCreateSensor}>Create Sensor</Button>
+                    <Button variant="contained" color="primary" onClick={handleCreateSensor}>Create Sensor</Button>
                 </FormControl>
             </Box>
         </Dialog>

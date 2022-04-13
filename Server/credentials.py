@@ -20,7 +20,7 @@ async def RequestSNMPCredential(sid, credentialId):
 
 @sio.event
 async def RegisterSNMPCredentials(sid, data):
-    result = {"result": True, "reason": ""}
+    result = {"result": True, "reason": "", "data": data}
     if not data["name"] or not data["community"]:
         result["result"] = False
         result["reason"] = "Invalid name or community."

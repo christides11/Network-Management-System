@@ -47,7 +47,6 @@ export default function App(){
     }, []);
 
     const receiveDiscoveryRegisterResult = useCallback((data) => {
-        console.log(data);
         if(data.result == false){
             setSnackbarMessage("Job was not registered: " + data.reason);
             setSnackbarSeverity("error");
@@ -58,12 +57,25 @@ export default function App(){
         setSnackbarOpen(true);
     }, []);
 
+    const receiveSNMPCredentialsResult = useCallback((data) => {
+        if(data.result == false){
+            setSnackbarMessage("Credentials where not registered: " + data.reason);
+            setSnackbarSeverity("error");
+        }else{
+            setSnackbarMessage(data.data.name + " successfully registered.")
+            setSnackbarSeverity("success");
+        }
+        setSnackbarOpen(true);
+    }, []);
+
     useEffect(() => {
         socket.on("RegisterDeviceResult", receiveDeviceRegisterResult)
         socket.on("Frontend_RegisterDiscoveryScanResult", receiveDiscoveryRegisterResult)
+        socket.on("RegisterSNMPCredentialsResult", receiveSNMPCredentialsResult)
         return () => { 
             socket.off("RegisterDeviceResult", receiveDeviceRegisterResult)
             socket.off("Frontend_RegisterDiscoveryScanResult", receiveDiscoveryRegisterResult)
+            socket.off("RegisterSNMPCredentialsResult", receiveSNMPCredentialsResult)
         }
     }, [socket]);
 
