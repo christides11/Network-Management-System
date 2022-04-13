@@ -8,7 +8,7 @@ import { socket } from '../../api/socket';
 import CreateSensorModal from './createSensorModal';
 import { Link, useNavigate } from 'react-router-dom';
 
-function SensorsTable({device, socket, sensorList}){
+function SensorsTable({device, socket, sensorList, setSensorList}){
     const [anchorEl, setAnchorEl] = React.useState(null);
     const [addingDevice, setAddingDevice, addingDeviceRef] = useState(false);
     const open = Boolean(anchorEl);
@@ -23,6 +23,7 @@ function SensorsTable({device, socket, sensorList}){
 
     const handleCloseAddSensor = () => {
         setAddingDevice(false);
+        setSensorList([]);
     }
 
     function Row({row, k}){
@@ -92,21 +93,23 @@ function DevicePage({socket}){
     const [sensorList, setSensorList, sensorListRef] = useState([]);
 
     const receiveDevice = useCallback((data) => {
-        console.log(data);
         setDevice(data);
     });
 
     const receiveDeviceSensors = useCallback((data) => {
-        console.log(data);
         setSensorList(data);
     });
+
+    useEffect(() => {
+        if(sensorListRef.current.length == 0) socket.emit("RequestDeviceSensors", params.deviceId);
+    }, [sensorList]);
 
     useEffect(() => {
         socket.on("ReceiveDevice", receiveDevice)
         socket.on("ReceiveDeviceSensorList", receiveDeviceSensors);
 
         if(deviceRef.current == null) socket.emit("RequestDevice", params.deviceId);
-        if(sensorListRef.current.length == 0) socket.emit("RequestDeviceSensors", params.deviceId);
+        //if(sensorListRef.current.length == 0) socket.emit("RequestDeviceSensors", params.deviceId);
 
         return () => { 
             socket.off("ReceiveDevice", receiveDevice)
@@ -125,7 +128,7 @@ function DevicePage({socket}){
                 <h2>{device.ipAddress}</h2>
 
                 <h2>Sensors</h2>
-                <SensorsTable device={device} sensorList={sensorList} socket={socket} />
+                <SensorsTable device={device} sensorList={sensorList} setSensorList={setSensorList} socket={socket} />
                 </>
             }
         </div>
