@@ -1,3 +1,4 @@
+import { LinearProgress } from '@mui/material';
 import React, {useState, useEffect, useCallback} from 'react'
 
 export default function Alerts({ socket }) {
@@ -7,6 +8,8 @@ export default function Alerts({ socket }) {
     const [sensorsList, setSensors] = useState([]);
     const [sensorsStyling, setSensorStyling] = useState([]);
 
+    const [loadingData, setLoadingStatus, loadingStatusRef] = useState(true);
+
     // runs only when socket changes
     useEffect(() => {
         // Get entire device row
@@ -14,11 +17,10 @@ export default function Alerts({ socket }) {
         socket.on("ReceiveAllDeviceSensorList", receiveAllDeviceSensorList);
         refreshData();
 
-    return () => {
-      socket.off("ReceiveDeviceList", receiveDeviceList);
-      socket.off("ReceiveAllDeviceSensorList", receiveAllDeviceSensorList);
-    };
-
+        return () => {
+            socket.off("ReceiveDeviceList", receiveDeviceList);
+            socket.off("ReceiveAllDeviceSensorList", receiveAllDeviceSensorList);
+        };
         // Get entire sensor row
     }, [socket])
 
@@ -40,10 +42,12 @@ export default function Alerts({ socket }) {
     // Callback functions from the database
     const receiveDeviceList = useCallback((devicesList) => {
         setDevices(devicesList);
+        setLoadingStatus(false);
       });
     
     const receiveAllDeviceSensorList = useCallback((sensorsList) => {
         setSensors(sensorsList);
+        setLoadingStatus(false);
     });
 
     // Styling functions
@@ -90,7 +94,12 @@ export default function Alerts({ socket }) {
         <div className="container-fluid mt-3">
             <h1 >Alerts</h1>
             <hr className="w-25 mb-5"></hr>
+            {loadingData && 
+                <LinearProgress/>
+            }
             {/* 2 sections */}
+            { loadingData == false &&
+            <>
             <section>
                 <div className="card">
                     <div className="card-title"><h2 className="px-3 pt-3">Devices</h2></div>
@@ -158,6 +167,8 @@ export default function Alerts({ socket }) {
                 </div>
 
             </section>
+            </>
+            }
         </div>
     )
 }

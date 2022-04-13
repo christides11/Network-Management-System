@@ -199,7 +199,7 @@ function DevicesPage({socket}){
             }
             {
                 loadingProbes &&
-                <LinearProgress></LinearProgress>
+                <LinearProgress/>
             }
             <br/>
             <Button variant="contained" onClick={RefreshDeviceList}>Refresh</Button>
