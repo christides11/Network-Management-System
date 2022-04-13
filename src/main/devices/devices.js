@@ -66,7 +66,7 @@ function DevicesPage({socket}){
         let temp = [...openRef.current];
         temp[index] = !temp[index];
         setOpen(temp);
-        if(temp){
+        if(temp[index]){
             GetProbeDeviceList(probeID);
         }
     }
