@@ -158,8 +158,8 @@ async def DeviceStatusJob():
     while True:
         for item in probes.keys():
             record = helpers.fetchAllFromDB("SELECT \"ipAddress\" FROM public.device WHERE \"parent\"={} AND \"networkID\"={}".format(item, network))
+            loop = asyncio.get_event_loop()
             for r in record:
-                loop = asyncio.get_event_loop()
                 loop.create_task(sio.emit('Probe_TryPingDevice', {"ip": r['ipAddress']}, probes[item]["sid"]))
             loop.create_task(sio.emit('Probe_TryPingDevice', {"ip": "localhost"}, probes[item]["sid"]))
         await asyncio.sleep(300)
