@@ -80,7 +80,7 @@ export default function App(){
                 <div className="d-flex flex-sm-column flex-row flex-nowrap bg-light align-items-center sticky-top">
                     {/* Main Link */}
                     <a className="d-block p-3 link-dark text-decoration-none" title="" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-original-title="Icon-only">
-                        <Link to={"/"}>
+                        <Link to={"/"} style={{ textDecoration: 'none' }}>
                         <img src={NetmanLogo} className="img-fluid" width={75} height={75}/>
                         </Link>
                     </a>
@@ -102,7 +102,7 @@ export default function App(){
                         {/* Link Item */}
                         <li className="nav-item">
                             <a className="nav-link py-2 px-2" title="" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-original-title="Home">
-                                <Link to={"/summary"}>
+                                <Link to={"/summary"} style={{ textDecoration: 'none' }}>
                                 <i className="bi-house fs-1"></i>
                                 <p>Home</p>
                                 </Link>
@@ -112,7 +112,7 @@ export default function App(){
                         {/* Link Item */}
                         <li>
                             <a className="nav-link py-2 px-2" title="" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-original-title="Dashboard">
-                                <Link to={"/devices"}>
+                                <Link to={"/devices"} style={{ textDecoration: 'none' }}>
                                 <i className="bi bi-laptop fs-1"></i>
                                 <p>Devices</p>
                                 </Link>
@@ -122,7 +122,7 @@ export default function App(){
                         {/* Link Item */}
                         <li>
                             <a className="nav-link py-2 px-2" title="" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-original-title="Dashboard">
-                                <Link to={"/alerts"}>
+                                <Link to={"/alerts"} style={{ textDecoration: 'none' }}>
                                 <i className="bi bi-alarm fs-1"></i>
                                 <p>Alerts</p>
                                 </Link>
@@ -132,7 +132,7 @@ export default function App(){
                         {/* Link Item */}
                         <li>
                             <a className="nav-link py-2 px-2" title="" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-original-title="Dashboard">
-                                <Link to={"/credentials"}>
+                                <Link to={"/credentials"} style={{ textDecoration: 'none' }}>
                                 <i className="bi bi-credit-card-2-front fs-1"></i>
                                 <p>Credentials</p>
                                 </Link>
@@ -142,7 +142,7 @@ export default function App(){
                         {/* Link Item */}
                         <li>
                             <a className="nav-link py-2 px-2" title="" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-original-title="Dashboard">
-                                <Link to={"/discovery"}>
+                                <Link to={"/discovery"} style={{ textDecoration: 'none' }}>
                                 <i className="bi bi-plus-circle fs-1"></i>
                                 <p>Create</p>
                                 </Link>
@@ -152,7 +152,7 @@ export default function App(){
                         {/* Link Item */}
                         <li>
                             <a className="nav-link py-2 px-2" title="" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-original-title="Dashboard">
-                                <Link to={"/discoveryjobs"}>
+                                <Link to={"/discoveryjobs"} style={{ textDecoration: 'none' }}>
                                 <i className="bi bi-eye fs-1"></i>
                                 <p>View</p>
                                 </Link>
@@ -162,7 +162,7 @@ export default function App(){
                         {/* Link Item */}
                         <li>
                             <a className="nav-link py-2 px-2" title="" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-original-title="Dashboard">
-                                <Link to={"/discoverylog"}>
+                                <Link to={"/discoverylog"} style={{ textDecoration: 'none' }}>
                                 <i className="bi bi-archive fs-1"></i>
                                 <p>Logs</p>
                                 </Link>
