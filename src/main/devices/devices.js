@@ -82,6 +82,9 @@ function DevicesPage({socket}){
     }
 
     function ProbeRow({probe, k}) {
+
+        console.log(probe);
+
         return (
             <React.Fragment>
                 <TableRow sx={{ '& > *': { borderBottom: 'unset' } }}>
@@ -95,6 +98,9 @@ function DevicesPage({socket}){
                     </TableCell>
                     <TableCell>
                         {probe.ipAddress}
+                    </TableCell>
+                    <TableCell>
+                        {probe.networkID}
                     </TableCell>
                     <TableCell>
                         <Button variant="text"> 
@@ -168,6 +174,9 @@ function DevicesPage({socket}){
                                 </TableCell>
                                 <TableCell>
                                     PROBE IP
+                                </TableCell>
+                                <TableCell>
+                                    NETWORK
                                 </TableCell>
                                 <TableCell>
 
